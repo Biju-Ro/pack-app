@@ -44,14 +44,15 @@ export interface User {
  * - minute - the minute the event is planned to take place.
  * - meridiem - whether the time indicated is AM or PM.
  * - tags - a list of Tags the host attributed to this event.
- * - yesVotes: a list of Users who have indicated that they plan on coming.
- * - maybeVotes: a list of Users who have indicated that they may be able to come.
- * - noVotes: a list of Users who have indicated that they cannot attend this event.
+ * - yesVotes: a list of User ids who have indicated that they plan on coming.
+ * - maybeVotes: a list of User ids who have indicated that they may be able to come.
+ * - noVotes: a list of User ids who have indicated that they cannot attend this event.
  */
 export interface Event {
     eid: number;
     title: string;
-    host: User;
+    hostname: string;
+    hostuid: number;
     month: number;
     day: number;
     year: number;
@@ -59,9 +60,9 @@ export interface Event {
     minute: number;
     meridiem: 'AM' | 'PM';
     tags: Tag[];
-    yesVotes: User[];
-    maybeVotes: User[];
-    noVotes: User[];
+    yesVotes: number[];
+    maybeVotes: number[];
+    noVotes: number[];
 }
 
 export interface Application {
