@@ -1,10 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
 import React from "react";
+import ProfilePage from "@/components/ProfilePage";
 
 const Page = () => {
   return (
     <View style={styles.container}>
-      <Text>Profile Screen</Text>
+      <ProfilePage navigation={undefined} />
     </View>
   );
 };

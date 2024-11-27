@@ -1,10 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
 import React from "react";
+import ChatDashboard from "@/components/ChatDashboard";
 
 const Page = () => {
   return (
     <View style={styles.container}>
-      <Text>Chats Screen</Text>
+      <ChatDashboard />
     </View>
   );
 };
