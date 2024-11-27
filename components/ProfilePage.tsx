@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
-export default function ProfilePage({ navigation }) {
+export default function ProfilePage({ navigation }:{navigation:any}) {
   const mockData = {
     photo: "https://via.placeholder.com/150",
     name: "John Doe",
