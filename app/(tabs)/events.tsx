@@ -1,5 +1,5 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View } from "react-native";
 import EventPage from "@/components/EventPage";
 
 const Page = () => {
@@ -7,7 +7,7 @@ const Page = () => {
     <View style={styles.container}>
       <Text>Events Screen</Text>
       <StatusBar style="auto" />
-      <EventPage/>
+      <EventPage />
     </View>
   );
 };

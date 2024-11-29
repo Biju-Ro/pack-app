@@ -1,0 +1,105 @@
+{
+    "events": [
+      {
+        "event_name": "Movie Night: Spider-Man: Into the Spider-Verse",
+        "host": "Dorm RA Team",
+        "date": "2024-12-01",
+        "time": "20:00",
+        "tags": ["Movie", "Chill", "Community"],
+        "attending": 25,
+        "maybe": 10,
+        "not_going": 5
+      },
+      {
+        "event_name": "Arcane Watch Party (Season 1)",
+        "host": "League of Legends Club",
+        "date": "2024-12-03",
+        "time": "19:30",
+        "tags": ["Series", "Gaming", "Fantasy"],
+        "attending": 30,
+        "maybe": 12,
+        "not_going": 8
+      },
+      {
+        "event_name": "Mario Kart Tournament",
+        "host": "Dorm Gaming Committee",
+        "date": "2024-12-05",
+        "time": "18:00",
+        "tags": ["Gaming", "Competition", "Fun"],
+        "attending": 20,
+        "maybe": 8,
+        "not_going": 6
+      },
+      {
+        "event_name": "Board Game Night",
+        "host": "Hall 3 RAs",
+        "date": "2024-12-08",
+        "time": "19:00",
+        "tags": ["Games", "Social", "Relaxation"],
+        "attending": 15,
+        "maybe": 5,
+        "not_going": 4
+      },
+      {
+        "event_name": "DIY Holiday Ornament Workshop",
+        "host": "Dorm Craft Club",
+        "date": "2024-12-10",
+        "time": "16:00",
+        "tags": ["Crafts", "Holiday", "Creative"],
+        "attending": 18,
+        "maybe": 7,
+        "not_going": 3
+      },
+      {
+        "event_name": "Midnight Pancakes & Pajamas",
+        "host": "Dorm Kitchen Committee",
+        "date": "2024-12-12",
+        "time": "23:00",
+        "tags": ["Food", "Casual", "Late Night"],
+        "attending": 35,
+        "maybe": 15,
+        "not_going": 5
+      },
+      {
+        "event_name": "Open Mic Karaoke Night",
+        "host": "Dorm Music Enthusiasts",
+        "date": "2024-12-15",
+        "time": "20:30",
+        "tags": ["Music", "Singing", "Fun"],
+        "attending": 22,
+        "maybe": 9,
+        "not_going": 6
+      },
+      {
+        "event_name": "Smash Bros Showdown",
+        "host": "Gaming Club",
+        "date": "2024-12-18",
+        "time": "18:00",
+        "tags": ["Gaming", "Competition", "Casual"],
+        "attending": 28,
+        "maybe": 14,
+        "not_going": 5
+      },
+      {
+        "event_name": "Yoga and Mindfulness Night",
+        "host": "Dorm Wellness Group",
+        "date": "2024-12-20",
+        "time": "17:30",
+        "tags": ["Wellness", "Relaxation", "Fitness"],
+        "attending": 12,
+        "maybe": 6,
+        "not_going": 2
+      },
+      {
+        "event_name": "Cocoa & Cozy Trivia Night",
+        "host": "Dorm Life Team",
+        "date": "2024-12-22",
+        "time": "19:00",
+        "tags": ["Trivia", "Food", "Community"],
+        "attending": 20,
+        "maybe": 10,
+        "not_going": 5
+      }
+    ]
+  }
+  
