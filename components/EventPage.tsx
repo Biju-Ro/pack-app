@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
 
 interface Event {
   id: string;
@@ -234,7 +235,9 @@ const EventPage = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Events</Text>
         <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="add" size={24} color="black" />
+          <Link href={"/newevent"}>
+            <Ionicons name="add" size={24} color="black" />
+          </Link>
         </TouchableOpacity>
       </View>
 

@@ -23,9 +23,7 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
       <View style={styles.imageWrapper}>
         <Image
           source={{
-            uri:
-              userData.ProfilePicture ||
-              "/Users/rohanbiju15/Documents/GitHub/pack-app/assets/default.jpg",
+            uri: userData.ProfilePicture || "assets/default.jpg",
           }}
           style={styles.image}
         />
@@ -56,12 +54,11 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
 
         {/* Edit Profile Button */}
       </View>
-
-      <Pressable style={styles.editButton}>
-        <Link href="/profileedit">
+      <Link href="/profileedit" style={styles.editButton}>
+        <Pressable>
           <Text style={styles.editButtonText}>Edit Profile</Text>
-        </Link>
-      </Pressable>
+        </Pressable>
+      </Link>
     </ScrollView>
   );
 }

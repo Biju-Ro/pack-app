@@ -7,6 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Link } from "expo-router";
 
 const ChatDashboard = () => {
   const notifications = {
@@ -97,6 +98,7 @@ const ChatDashboard = () => {
         </TouchableOpacity>
 
         {/* Rotating Chat Button */}
+
         <TouchableOpacity style={styles.chatButton}>
           <Feather
             name="refresh-cw"
@@ -104,7 +106,9 @@ const ChatDashboard = () => {
             color="#333"
             style={styles.buttonIcon}
           />
-          <Text style={styles.buttonText}>Rotating Chat</Text>
+          <Link href="/rotatingchat" style={styles.buttonText}>
+            Rotating Chat
+          </Link>
           <View style={[styles.badgeContainer, styles.wideBadge]}>
             <Animated.Text style={[styles.badgeText, { opacity: fadeAnim }]}>
               {renderCountdown()}

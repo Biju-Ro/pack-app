@@ -4,306 +4,377 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
-  Platform,
+  Modal,
+  StyleSheet,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Link } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import * as ImagePicker from "expo-image-picker";
-import {
-  Dialog,
-  Portal,
-  Button,
-  Provider as PaperProvider,
-} from "react-native-paper";
 
-const EventCreationScreen = () => {
-  const [eventDetails, setEventDetails] = useState({
+export default function NewEventPage() {
+  const [formData, setFormData] = useState({
     name: "",
-    banner: null,
-    time: new Date(),
     date: new Date(),
+    time: new Date(),
     location: "",
-    maxPeople: "",
+    tags: [""],
   });
 
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showBackDialog, setShowBackDialog] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [isTimePickerVisible, setTimePickerVisible] = useState(false);
+  const [isSaveModalVisible, setSaveModalVisible] = useState(false);
 
-  const handleImageUpload = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need camera roll permissions to make this work!");
-      return;
-    }
-
-    // Launch image picker
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  // Function to handle tag input
+  const handleTagChange = (index, text) => {
+    const newTags = [...formData.tags];
+    newTags[index] = text;
+    setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
-  const handleDateChange = (event: any, selectedDate: Date) => {
-    const currentDate = selectedDate || eventDetails.date;
-    setShowDatePicker(Platform.OS === "ios");
-    setEventDetails((prev) => ({
+  // Function to add a new tag
+  const addTag = () => {
+    setFormData((prev) => ({
       ...prev,
-      date: currentDate,
+      tags: [...prev.tags, ""],
     }));
   };
 
-  const handleTimeChange = (event: any, selectedTime: Date) => {
-    const currentTime = selectedTime || eventDetails.time;
-    setShowTimePicker(Platform.OS === "ios");
-    setEventDetails((prev) => ({
-      ...prev,
-      time: currentTime,
-    }));
+  // Function to remove a tag
+  const removeTag = (index) => {
+    const newTags = formData.tags.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
-  const validateForm = () => {
-    const { name, banner, location, maxPeople } = eventDetails;
-    return name && banner && location && maxPeople;
-  };
-
-  const handleSave = () => {
-    if (validateForm()) {
-      setShowSaveDialog(true);
-    } else {
-      alert("Please fill in all fields");
+  // Save event function
+  const saveEvent = async () => {
+    try {
+      // Note: In a real app, you'd typically save to a backend or secure local storage
+      console.log("Saving event:", formData);
+      // Implement your actual save logic here
+    } catch (error) {
+      console.error("Error saving event:", error);
     }
-  };
-
-  const confirmSave = () => {
-    // Actual save logic would go here
-    console.log("Event saved:", eventDetails);
-    setShowSaveDialog(false);
   };
 
   return (
-    <PaperProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-        <ScrollView
-          contentContainerStyle={{
-            padding: 20,
-            backgroundColor: "white",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: 20,
-            }}
-          >
-            Create New Event
-          </Text>
-
-          {/* Banner Upload */}
-          <TouchableOpacity
-            onPress={handleImageUpload}
-            style={{
-              height: 200,
-              backgroundColor: "#f0f0f0",
-              borderRadius: 10,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
-            {eventDetails.banner ? (
-              <Image
-                source={{ uri: eventDetails.banner }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 10,
-                }}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text style={{ color: "gray" }}>Tap to Upload Banner</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Event Name */}
-          <Text style={styles.label}>Event Name</Text>
-          <TextInput
-            style={styles.input}
-            value={eventDetails.name}
-            onChangeText={(text) =>
-              setEventDetails((prev) => ({
-                ...prev,
-                name: text,
-              }))
-            }
-            placeholder="Enter event name"
-          />
-
-          {/* Date Picker */}
-          <Text style={styles.label}>Event Date</Text>
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
-            style={styles.input}
-          >
-            <Text>{eventDetails.date.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              testID="datePicker"
-              value={eventDetails.date}
-              mode="date"
-              is24Hour={true}
-              display="default"
-              onChange={handleDateChange}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Event Name</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, name: text }))
+              }
+              placeholder="Enter event name"
             />
-          )}
 
-          {/* Time Picker */}
-          <Text style={styles.label}>Event Time</Text>
-          <TouchableOpacity
-            onPress={() => setShowTimePicker(true)}
-            style={styles.input}
-          >
-            <Text>{eventDetails.time.toLocaleTimeString()}</Text>
-          </TouchableOpacity>
-
-          {showTimePicker && (
-            <DateTimePicker
-              testID="timePicker"
-              value={eventDetails.time}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={handleTimeChange}
-            />
-          )}
-
-          {/* Location */}
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            value={eventDetails.location}
-            onChangeText={(text) =>
-              setEventDetails((prev) => ({
-                ...prev,
-                location: text,
-              }))
-            }
-            placeholder="Enter event location"
-          />
-
-          {/* Max People */}
-          <Text style={styles.label}>Maximum Attendees</Text>
-          <TextInput
-            style={styles.input}
-            value={eventDetails.maxPeople}
-            onChangeText={(text) =>
-              setEventDetails((prev) => ({
-                ...prev,
-                maxPeople: text,
-              }))
-            }
-            placeholder="Maximum number of people"
-            keyboardType="numeric"
-          />
-
-          {/* Action Buttons */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 20,
-            }}
-          >
-            <TouchableOpacity onPress={() => setShowBackDialog(true)}>
-              <Text style={{ color: "black" }}>Go Back</Text>
+            <Text style={styles.label}>Date</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setDatePickerVisible(true)}
+            >
+              <Text>{formData.date.toLocaleDateString()}</Text>
             </TouchableOpacity>
+            {isDatePickerVisible && (
+              <DateTimePicker
+                value={formData.date}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setDatePickerVisible(false);
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: selectedDate || prev.date,
+                  }));
+                }}
+              />
+            )}
 
-            <TouchableOpacity onPress={handleSave}>
-              <Text style={{ color: "white" }}>Save Event</Text>
+            <Text style={styles.label}>Time</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setTimePickerVisible(true)}
+            >
+              <Text>
+                {formData.time.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </TouchableOpacity>
+            {isTimePickerVisible && (
+              <DateTimePicker
+                value={formData.time}
+                mode="time"
+                display="default"
+                onChange={(event, selectedTime) => {
+                  setTimePickerVisible(false);
+                  setFormData((prev) => ({
+                    ...prev,
+                    time: selectedTime || prev.time,
+                  }));
+                }}
+              />
+            )}
+
+            <Text style={styles.label}>Location</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, location: text }))
+              }
+              placeholder="Enter event location"
+            />
+
+            {/* Tags Section */}
+            <Text style={styles.label}>Tags</Text>
+            {formData.tags.map((tag, index) => (
+              <View key={index} style={styles.tagInputContainer}>
+                <TextInput
+                  style={styles.tagInput}
+                  value={tag}
+                  onChangeText={(text) => handleTagChange(index, text)}
+                  placeholder="Enter tag"
+                />
+                <TouchableOpacity
+                  onPress={() => removeTag(index)}
+                  style={styles.removeTagButton}
+                >
+                  <Text style={styles.removeTagText}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity onPress={addTag} style={styles.addTagButton}>
+              <Text style={styles.addTagText}>+ Add Tag</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </ScrollView>
 
-          {/* Save Confirmation Dialog */}
-          <Portal>
-            <Dialog
-              visible={showSaveDialog}
-              onDismiss={() => setShowSaveDialog(false)}
-            >
-              <Dialog.Title>Confirm Save</Dialog.Title>
-              <Dialog.Content>
-                <Text>Are you sure you want to save this event?</Text>
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button onPress={() => setShowSaveDialog(false)}>Cancel</Button>
-                <Button onPress={confirmSave}>Confirm</Button>
-              </Dialog.Actions>
-            </Dialog>
-          </Portal>
+      {/* Bottom Button Container */}
+      <View style={styles.bottomButtonContainer}>
+        <Link href="/events" asChild>
+          <TouchableOpacity style={styles.cancelButton}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </Link>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={() => setSaveModalVisible(true)}
+        >
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
 
-          {/* Back Confirmation Dialog */}
-          <Portal>
-            <Dialog
-              visible={showBackDialog}
-              onDismiss={() => setShowBackDialog(false)}
-            >
-              <Dialog.Title>Confirm Go Back</Dialog.Title>
-              <Dialog.Content>
-                <Text>
-                  Are you sure you want to go back? Unsaved changes will be
-                  lost.
-                </Text>
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button onPress={() => setShowBackDialog(false)}>Cancel</Button>
-                <Button
+      {/* Save Confirmation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isSaveModalVisible}
+        onRequestClose={() => setSaveModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Save Event</Text>
+            <Text style={styles.modalText}>
+              Do you want to save this event?
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setSaveModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>No</Text>
+              </TouchableOpacity>
+              <Link href="/events" asChild>
+                <TouchableOpacity
+                  style={styles.modalConfirmButton}
                   onPress={() => {
-                    // Navigation logic would go here
-                    setShowBackDialog(false);
+                    saveEvent();
+                    setSaveModalVisible(false);
                   }}
                 >
-                  Confirm
-                </Button>
-              </Dialog.Actions>
-            </Dialog>
-          </Portal>
-        </ScrollView>
-      </SafeAreaView>
-    </PaperProvider>
+                  <Text style={styles.modalConfirmButtonText}>Yes</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
-};
+}
 
-const styles = {
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  formContainer: {
+    backgroundColor: "white",
+    margin: 20,
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  inputGroup: {
+    marginTop: 10,
+  },
   label: {
-    fontSize: 16,
-    marginBottom: 8,
     color: "#333",
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
+    borderColor: "#FF4444",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+  },
+  tagInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  tagInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  removeTagButton: {
+    backgroundColor: "#FF4444",
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeTagText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  addTagButton: {
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#FFF0F0",
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#FF4444",
+  },
+  addTagText: {
+    color: "#FF4444",
+    fontWeight: "bold",
+  },
+  bottomButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 20,
     backgroundColor: "white",
   },
-  button: {
+  cancelButton: {
     flex: 1,
+    marginRight: 10,
     padding: 15,
-    borderRadius: 8,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    borderRadius: 10,
     alignItems: "center",
-    marginHorizontal: 5,
   },
-};
-
-export default EventCreationScreen;
+  cancelButtonText: {
+    color: "#FF4444",
+    fontWeight: "bold",
+  },
+  saveButton: {
+    flex: 1,
+    marginLeft: 10,
+    padding: 15,
+    backgroundColor: "#FF4444",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 25,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#FF4444",
+  },
+  modalText: {
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalCancelButton: {
+    flex: 1,
+    marginRight: 10,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalCancelButtonText: {
+    color: "#FF4444",
+    fontWeight: "bold",
+  },
+  modalConfirmButton: {
+    flex: 1,
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: "#FF4444",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalConfirmButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+});
