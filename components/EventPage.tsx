@@ -1,254 +1,426 @@
 import React, { useState } from "react";
-import { StatusBar } from "expo-status-bar";
 import {
-  StyleSheet,
-  Text,
   View,
-  FlatList,
+  Text,
+  ScrollView,
   TouchableOpacity,
+  StyleSheet,
+  Modal,
+  SafeAreaView,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-const DATA = [
-  { id: "1", tagname: "Basketball" },
-  { id: "2", tagname: "Reels" },
-  { id: "3", tagname: "Climbing" },
-  { id: "4", tagname: "Dinner" },
-  { id: "5", tagname: "Free Food" },
-];
+interface Event {
+  id: string;
+  name: string;
+  host: string;
+  date: string;
+  time: string;
+  location: string;
+  tags: string[];
+  yesCount: number;
+  maybeCount: number;
+  noCount: number;
+  userResponse?: "yes" | "maybe" | "no";
+}
 
-const Tag = ({ tagname }) => (
-  <View style={styles.tag}>
-    <Text style={styles.tagText}>{tagname}</Text>
-  </View>
-);
+const EventPage = () => {
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: "1",
+      name: "Summer Tech Conference",
+      host: "Tech Innovations Inc.",
+      date: "2024-07-15",
+      time: "09:00 AM",
+      location: "San Francisco Convention Center",
+      tags: ["Technology", "Networking", "Innovation"],
+      yesCount: 0,
+      maybeCount: 0,
+      noCount: 0,
+    },
+    {
+      id: "2",
+      name: "Startup Networking Night",
+      host: "Founders Network",
+      date: "2024-06-22",
+      time: "06:30 PM",
+      location: "Downtown Coworking Space",
+      tags: ["Startups", "Networking", "Entrepreneurs"],
+      yesCount: 0,
+      maybeCount: 0,
+      noCount: 0,
+    },
+  ]);
 
-export default function EventPage() {
-  const [selectedButton, setSelectedButton] = useState(null);
-  const [yesCount, setYesCount] = useState(0);
-  const [maybeCount, setMaybeCount] = useState(0);
-  const [noCount, setNoCount] = useState(0);
+  const [attendingEvents, setAttendingEvents] = useState<Event[]>([]);
+  const [confirmNoEvent, setConfirmNoEvent] = useState<Event | null>(null);
 
-  const handlePress = (type) => {
-    if (selectedButton === type) {
-      setSelectedButton(null);
-      if (type === "yes") setYesCount((prev) => prev - 1);
-      if (type === "maybe") setMaybeCount((prev) => prev - 1);
-      if (type === "no") setNoCount((prev) => prev - 1);
-    } else {
-      if (selectedButton === "yes") setYesCount((prev) => prev - 1);
-      if (selectedButton === "maybe") setMaybeCount((prev) => prev - 1);
-      if (selectedButton === "no") setNoCount((prev) => prev - 1);
+  const handleAttendanceClick = (
+    eventId: string,
+    type: "yes" | "maybe" | "no"
+  ) => {
+    setEvents((currentEvents) =>
+      currentEvents.map((event) => {
+        if (event.id === eventId) {
+          const updatedEvent = { ...event };
 
-      setSelectedButton(type);
-      if (type === "yes") setYesCount((prev) => prev + 1);
-      if (type === "maybe") setMaybeCount((prev) => prev + 1);
-      if (type === "no") setNoCount((prev) => prev + 1);
+          // Reset previous response counts
+          if (event.userResponse === "yes")
+            updatedEvent.yesCount = Math.max(0, updatedEvent.yesCount - 1);
+          if (event.userResponse === "maybe")
+            updatedEvent.maybeCount = Math.max(0, updatedEvent.maybeCount - 1);
+          if (event.userResponse === "no")
+            updatedEvent.noCount = Math.max(0, updatedEvent.noCount - 1);
+
+          // Update new response
+          switch (type) {
+            case "yes":
+              updatedEvent.yesCount++;
+              updatedEvent.userResponse = "yes";
+
+              // Add to attending events if not already there
+              if (!attendingEvents.some((e) => e.id === eventId)) {
+                setAttendingEvents((prev) => [...prev, updatedEvent]);
+              }
+              break;
+            case "maybe":
+              updatedEvent.maybeCount++;
+              updatedEvent.userResponse = "maybe";
+              break;
+            case "no":
+              // Show confirmation dialog for 'no'
+              setConfirmNoEvent(event);
+              return event;
+          }
+
+          return updatedEvent;
+        }
+        return event;
+      })
+    );
+  };
+
+  const handleNoConfirmation = () => {
+    if (confirmNoEvent) {
+      setEvents((currentEvents) =>
+        currentEvents.map((event) => {
+          if (event.id === confirmNoEvent.id) {
+            const updatedEvent = { ...event };
+
+            // Remove from attending events if was 'yes'
+            if (event.userResponse === "yes") {
+              setAttendingEvents((prev) =>
+                prev.filter((e) => e.id !== event.id)
+              );
+            }
+
+            // Reset previous response counts
+            if (event.userResponse === "yes")
+              updatedEvent.yesCount = Math.max(0, updatedEvent.yesCount - 1);
+            if (event.userResponse === "maybe")
+              updatedEvent.maybeCount = Math.max(
+                0,
+                updatedEvent.maybeCount - 1
+              );
+            if (event.userResponse === "no")
+              updatedEvent.noCount = Math.max(0, updatedEvent.noCount - 1);
+
+            // Update 'no' response
+            updatedEvent.noCount++;
+            updatedEvent.userResponse = "no";
+
+            return updatedEvent;
+          }
+          return event;
+        })
+      );
+
+      // Close the confirmation dialog
+      setConfirmNoEvent(null);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      <View style={styles.eventBox}>
-        <Text style={styles.eventTitle}>Food Court</Text>
-        <Text style={styles.eventDetails}>
-          <Text style={styles.bold}>Host:</Text> RA Alex
-        </Text>
-        <Text style={styles.eventDetails}>
-          <Text style={styles.bold}>Date:</Text> 12/3/24
-        </Text>
-        <Text style={styles.eventDetails}>
-          <Text style={styles.bold}>Time:</Text> 6:00 PM EST
-        </Text>
-        <Text style={[styles.eventDetails, styles.bold]}>Tags:</Text>
-        <View style={styles.tagBox}>
-          <FlatList
-            data={DATA}
-            renderItem={({ item }) => <Tag tagname={item.tagname} />}
-            keyExtractor={(item) => item.id}
-            numColumns={3}
-            contentContainerStyle={styles.flatListContent}
-          />
+  const renderEventCard = (event: Event, section: string) => (
+    <View key={event.id} style={styles.eventCard}>
+      <Text style={styles.eventName}>{event.name}</Text>
+      <View style={styles.eventDetails}>
+        <Text style={styles.eventText}>Host: {event.host}</Text>
+        <Text style={styles.eventText}>Date: {event.date}</Text>
+        <Text style={styles.eventText}>Time: {event.time}</Text>
+        <Text style={styles.eventText}>Location: {event.location}</Text>
+
+        {/* Tags Section */}
+        <View style={styles.tagsContainer}>
+          {event.tags.map((tag, index) => (
+            <View key={index} style={styles.tagPill}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
         </View>
-        <Text style={styles.attendingPrompt}>Will you be attending?</Text>
-        <View style={styles.buttonRow}>
+
+        {/* Attendance Buttons */}
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[
-              styles.responseButton,
-              selectedButton === "yes"
-                ? styles.yesButton
-                : styles.yesbuttonOutline,
-              selectedButton === "yes" && { backgroundColor: "green" },
+              styles.attendanceButton,
+              styles.yesButton,
+              event.userResponse === "yes" && styles.selectedButton,
             ]}
-            onPress={() => handlePress("yes")}
+            onPress={() => handleAttendanceClick(event.id, "yes")}
+            disabled={event.userResponse === "yes"}
           >
-            <FontAwesome
-              name="check"
-              size={20}
-              color={selectedButton === "yes" ? "white" : "green"}
-            />
-            <Text
-              style={[
-                styles.buttonText,
-                selectedButton === "yes"
-                  ? { color: "white" }
-                  : { color: "green" },
-              ]}
-            >
-              {yesCount}
-            </Text>
+            <Text style={styles.buttonText}>Yes ({event.yesCount})</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              styles.responseButton,
-              selectedButton === "maybe"
-                ? styles.maybeButton
-                : styles.maybebuttonOutline,
-              selectedButton === "maybe" && { backgroundColor: "#f1c40f" },
+              styles.attendanceButton,
+              styles.maybeButton,
+              event.userResponse === "maybe" && styles.selectedButton,
             ]}
-            onPress={() => handlePress("maybe")}
+            onPress={() => handleAttendanceClick(event.id, "maybe")}
+            disabled={event.userResponse === "maybe"}
           >
-            <FontAwesome
-              name="question"
-              size={20}
-              color={selectedButton === "maybe" ? "white" : "#f1c40f"}
-            />
-            <Text
-              style={[
-                styles.buttonText,
-                selectedButton === "maybe"
-                  ? { color: "white" }
-                  : { color: "#f1c40f" },
-              ]}
-            >
-              {maybeCount}
-            </Text>
+            <Text style={styles.buttonText}>Maybe ({event.maybeCount})</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
-              styles.responseButton,
-              selectedButton === "no"
-                ? styles.noButton
-                : styles.nobuttonOutline,
-              selectedButton === "no" && { backgroundColor: "red" },
+              styles.attendanceButton,
+              styles.noButton,
+              event.userResponse === "no" && styles.selectedButton,
             ]}
-            onPress={() => handlePress("no")}
+            onPress={() => handleAttendanceClick(event.id, "no")}
+            disabled={event.userResponse === "no"}
           >
-            <FontAwesome
-              name="close"
-              size={20}
-              color={selectedButton === "no" ? "white" : "red"}
-            />
-            <Text
-              style={[
-                styles.buttonText,
-                selectedButton === "no" ? { color: "white" } : { color: "red" },
-              ]}
-            >
-              {noCount}
-            </Text>
+            <Text style={styles.buttonText}>No ({event.noCount})</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-}
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Confirmation Modal */}
+      <Modal
+        transparent={true}
+        visible={!!confirmNoEvent}
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Event Declination</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to mark "{confirmNoEvent?.name}" as "No"?
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setConfirmNoEvent(null)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={handleNoConfirmation}
+              >
+                <Text style={styles.modalConfirmButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Events</Text>
+        <TouchableOpacity style={styles.addButton}>
+          <Ionicons name="add" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Event Sections */}
+      <ScrollView>
+        {attendingEvents.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Events I'm Attending</Text>
+            {attendingEvents.map((event) =>
+              renderEventCard(event, "attending")
+            )}
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Today's Events</Text>
+          <Text style={styles.noEventsText}>No events today</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Upcoming Events</Text>
+          {events.map((event) => renderEventCard(event, "upcoming"))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Past Events</Text>
+          <Text style={styles.noEventsText}>No past events</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    padding: 15,
+    backgroundColor: "white",
   },
-  eventBox: {
-    width: "90%",
-    backgroundColor: "#ffffff",
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "black",
   },
-  eventTitle: {
-    fontSize: 30,
+  addButton: {
+    padding: 5,
+  },
+  section: {
+    marginVertical: 10,
+    paddingHorizontal: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "black",
+  },
+  noEventsText: {
+    color: "black",
+    textAlign: "center",
+  },
+  eventCard: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "black",
   },
   eventDetails: {
-    fontSize: 18,
+    marginBottom: 10,
+  },
+  eventText: {
+    color: "black",
     marginBottom: 5,
   },
-  bold: {
-    fontWeight: "bold",
-  },
-  tagBox: {
-    width: "100%",
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#d3d3d3",
+  tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    marginVertical: 10,
   },
-  tag: {
-    backgroundColor: "#ff0000",
-    paddingVertical: 5,
+  tagPill: {
+    backgroundColor: "red",
     paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 15,
-    margin: 5,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
+    marginRight: 5,
+    marginBottom: 5,
   },
   tagText: {
-    fontSize: 15,
-    color: "#ffffff",
-    fontWeight: "bold",
+    color: "white",
+    fontSize: 12,
   },
-  attendingPrompt: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 15,
-  },
-  buttonRow: {
+  buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    gap: 10,
+    justifyContent: "space-between",
   },
-  responseButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 12,
-    borderRadius: 10,
-    width: 100,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 5,
+  attendanceButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    borderWidth: 1,
   },
-  buttonText: {
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  yesbuttonOutline: {
-    borderWidth: 2,
-    backgroundColor: "transparent",
+  yesButton: {
     borderColor: "green",
   },
-  maybebuttonOutline: {
-    borderWidth: 2,
-    backgroundColor: "transparent",
-    borderColor: "#f1c40f",
+  maybeButton: {
+    borderColor: "orange",
   },
-  nobuttonOutline: {
-    borderWidth: 2,
-    backgroundColor: "transparent",
+  noButton: {
     borderColor: "red",
   },
+  buttonText: {
+    textAlign: "center",
+    color: "black",
+  },
+  selectedButton: {
+    backgroundColor: "rgba(0,255,0,0.1)",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "black",
+  },
+  modalText: {
+    marginBottom: 20,
+    textAlign: "center",
+    color: "black",
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalCancelButton: {
+    flex: 1,
+    padding: 10,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 5,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "red",
+    borderRadius: 5,
+  },
+  modalCancelButtonText: {
+    color: "black",
+    textAlign: "center",
+  },
+  modalConfirmButtonText: {
+    color: "white",
+    textAlign: "center",
+  },
 });
+
+export default EventPage;

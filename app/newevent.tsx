@@ -1,9 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
 import React from "react";
-import ChatDashboard from "@/components/ChatDashboard";
+import ProfilePage from "@/components/ProfilePage";
+import ProfileEdit from "@/components/ProfileEdit";
+import EventCreationScreen from "@/components/MakeEvent";
 
 const Page = () => {
-  return <ChatDashboard />;
+  return <EventCreationScreen />;
 };
 
 export default Page;
@@ -13,5 +15,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    width: "100%",
   },
 });

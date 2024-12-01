@@ -1,0 +1,15 @@
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "major": "Computer Science",
+    "minor": "Mathematics",
+    "dorm": "Hawthorne Hall",
+    "tags": [
+      "tech enthusiast",
+      "gamer",
+      "student mentor",
+      "volunteer"
+    ],
+    "ProfilePicture": "assets/default.jpg"
+  }
+  

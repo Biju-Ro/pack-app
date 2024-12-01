@@ -1,15 +1,10 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import EventPage from "@/components/EventPage";
+import { Link } from "expo-router";
 
 const Page = () => {
-  return (
-    <View style={styles.container}>
-      <Text>Events Screen</Text>
-      <StatusBar style="auto" />
-      <EventPage />
-    </View>
-  );
+  return <EventPage />;
 };
 
 export default Page;
