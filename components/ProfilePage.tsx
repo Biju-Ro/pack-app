@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "expo-router";
 import {
   View,
@@ -12,8 +12,29 @@ import {
 
 // Import user data from JSON
 import userData from "../data/user.json";
+//import useApplication from "@/hooks/useApplication";
+import { User } from "@/types";
+import useApplicationContext from "@/hooks/useApplicationContext";
 
 export default function ProfilePage({ navigation }: { navigation: any }) {
+
+  const {
+    users,
+    setUsers,
+    events,
+    setEvents,
+    raChat,
+    setRAChat,
+    floorChat,
+    setFloorChat,
+    rotatingChat,
+    setRotatingChat,
+  } = useApplicationContext();
+
+  useEffect(() => {
+    console.log("Showing main user in profile page:", (users as User[])[0]);
+  }, [users, events]);
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -23,7 +44,7 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
       <View style={styles.imageWrapper}>
         <Image
           source={{
-            uri: userData.ProfilePicture || "assets/default.jpg",
+            uri: (users as User[])[0].picture,
           }}
           style={styles.image}
         />
@@ -33,21 +54,21 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
       <View style={styles.card}>
         {/* Name */}
         <Text style={styles.name}>
-          {userData.first_name} {userData.last_name}
+          {(users as User[])[0].firstname} {(users as User[])[0].lastname}
         </Text>
 
         {/* Details */}
         <View style={styles.detailsContainer}>
-          <Text style={styles.details}>Major: {userData.major}</Text>
-          <Text style={styles.details}>Minor: {userData.minor}</Text>
-          <Text style={styles.details}>Dorm: {userData.dorm}</Text>
+          <Text style={styles.details}>Major: {(users as User[])[0].major}</Text>
+          <Text style={styles.details}>Minor: {(users as User[])[0].minor}</Text>
+          {/* <Text style={styles.details}>Dorm: {userData.dorm}</Text> */}
         </View>
 
         {/* Tags */}
         <View style={styles.tagContainer}>
-          {userData.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+          {(users as User[])[0].tags.map((tag, tid) => (
+            <View key={tid} style={styles.tag}>
+              <Text style={styles.tagText}>{tag.tagname}</Text>
             </View>
           ))}
         </View>

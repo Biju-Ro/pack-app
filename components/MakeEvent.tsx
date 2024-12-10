@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,34 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import useApplicationContext from "@/hooks/useApplicationContext";
+import { Event, User, Tag} from "@/types";
+import { USERDATA, TAGDATA, EVENTDATA } from "@/data/application";
 
 export default function NewEventPage() {
-  const [formData, setFormData] = useState({
-    name: "",
+
+  const {
+    users,
+    events,
+    setEvents,
+  } = useApplicationContext();
+
+  useEffect(() => {
+
+  }, [users, events]);
+
+  const [formData, setFormData] = useState<Event>({
+    eid: events.length,
+    title: "",
+    hostname: users[0].nickname,
+    hostuid: users[0].uid,
     date: new Date(),
-    time: new Date(),
     location: "",
-    tags: [""],
+    tags: [],
+    yesVotes: [users[0].uid],
+    maybeVotes: [],
+    noVotes: [],
+
   });
 
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -25,9 +45,9 @@ export default function NewEventPage() {
   const [isSaveModalVisible, setSaveModalVisible] = useState(false);
 
   // Function to handle tag input
-  const handleTagChange = (index, text) => {
+  const handleTagChange = (index: number, text: string) => {
     const newTags = [...formData.tags];
-    newTags[index] = text;
+    newTags[index].tagname = text;
     setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
@@ -35,12 +55,12 @@ export default function NewEventPage() {
   const addTag = () => {
     setFormData((prev) => ({
       ...prev,
-      tags: [...prev.tags, ""],
+      tags: [...prev.tags, {tid: TAGDATA.length, tagname: ""}],
     }));
   };
 
   // Function to remove a tag
-  const removeTag = (index) => {
+  const removeTag = (index: number) => {
     const newTags = formData.tags.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, tags: newTags }));
   };
@@ -50,7 +70,10 @@ export default function NewEventPage() {
     try {
       // Note: In a real app, you'd typically save to a backend or secure local storage
       console.log("Saving event:", formData);
+
       // Implement your actual save logic here
+      formData.eid = events.length;
+      setEvents([...events, formData]);
     } catch (error) {
       console.error("Error saving event:", error);
     }
@@ -67,9 +90,9 @@ export default function NewEventPage() {
             <Text style={styles.label}>Event Name</Text>
             <TextInput
               style={styles.input}
-              value={formData.name}
+              value={formData.title}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, name: text }))
+                setFormData((prev) => ({ ...prev, title: text }))
               }
               placeholder="Enter event name"
             />
@@ -102,7 +125,7 @@ export default function NewEventPage() {
               onPress={() => setTimePickerVisible(true)}
             >
               <Text>
-                {formData.time.toLocaleTimeString([], {
+                {formData.date.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -110,14 +133,14 @@ export default function NewEventPage() {
             </TouchableOpacity>
             {isTimePickerVisible && (
               <DateTimePicker
-                value={formData.time}
+                value={formData.date}
                 mode="time"
                 display="default"
                 onChange={(event, selectedTime) => {
                   setTimePickerVisible(false);
                   setFormData((prev) => ({
                     ...prev,
-                    time: selectedTime || prev.time,
+                    date: selectedTime || prev.date,
                   }));
                 }}
               />
@@ -139,7 +162,7 @@ export default function NewEventPage() {
               <View key={index} style={styles.tagInputContainer}>
                 <TextInput
                   style={styles.tagInput}
-                  value={tag}
+                  value={tag.tagname}
                   onChangeText={(text) => handleTagChange(index, text)}
                   placeholder="Enter tag"
                 />

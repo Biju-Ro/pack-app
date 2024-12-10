@@ -71,9 +71,9 @@ export default function ChatPage() {
   // Scroll to bottom when messages change
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+  }, [messages, flatListRef]);
 
-  const renderMessage = ({ item }) => {
+  const renderMessage = ({ item } : any) => {
     const isMe = item.sender === "me";
     return (
       <View

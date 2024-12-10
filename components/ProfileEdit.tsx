@@ -12,17 +12,34 @@ import {
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import * as DocumentPicker from "expo-document-picker";
+// import * as DocumentPicker from "expo-document-picker";
 
 // Import user data from a static source
 import initialUserData from "../data/user.json";
+//import useApplication from "@/hooks/useApplication";
+import { User, Tag } from "@/types";
+import useApplicationContext from "@/hooks/useApplicationContext";
 
 type UserData = typeof initialUserData;
 
 export default function ProfileEditor() {
+
+  const {
+    users,
+    setUsers,
+    events,
+    setEvents,
+    raChat,
+    setRAChat,
+    floorChat,
+    setFloorChat,
+    rotatingChat,
+    setRotatingChat,
+  } = useApplicationContext();
+  
   // State to manage form data
-  const [formData, setFormData] = useState<UserData>({
-    ...initialUserData,
+  const [formData, setFormData] = useState<User>({
+    ...(users as User[])[0],
   });
 
   // State for managing modals
@@ -43,7 +60,10 @@ export default function ProfileEditor() {
         alert("Sorry, we need camera roll permissions to make this work!");
       }
     })();
-  }, []);
+
+    console.log("main user in profile edit: ", users);
+
+  }, [users, events]);
 
   // Function to save profile image
   const saveProfileImage = async (imageUri: string) => {
@@ -92,7 +112,7 @@ export default function ProfileEditor() {
   // Function to handle tag input
   const handleTagChange = (index: number, text: string) => {
     const newTags = [...formData.tags];
-    newTags[index] = text;
+    newTags[index].tagname = text;
     setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
@@ -100,7 +120,7 @@ export default function ProfileEditor() {
   const addTag = () => {
     setFormData((prev) => ({
       ...prev,
-      tags: [...prev.tags, ""],
+      tags: [...prev.tags, {tid: prev.tags.length, tagname: ""}],
     }));
   };
 
@@ -126,11 +146,28 @@ export default function ProfileEditor() {
       // Note: In a real app, you'd typically save to a backend or secure local storage
       console.log("Saving profile:", formData);
 
+      if (profileImage) {
+        formData.picture = profileImage;
+      }
+      const tempUsers = [...users];
+      tempUsers.splice(0, 1, formData);
+      setUsers([...tempUsers]);
+
+      console.log("Saved profile:", users[0]);
+
       // Implement your actual save logic here
     } catch (error) {
       console.error("Error saving profile:", error);
     }
   };
+
+  const saveProcedure = async () => {
+    console.log("Tried Saving Profile");
+    const dummy = await saveProfile();
+    console.log("Awaited save profile: ", dummy);
+    const dummy2 = await setSaveModalVisible(false);
+    console.log("Awaited switch visibility:", dummy2);
+  }
 
   return (
     <View style={styles.container}>
@@ -159,18 +196,27 @@ export default function ProfileEditor() {
             <Text style={styles.label}>First Name</Text>
             <TextInput
               style={styles.input}
-              value={formData.first_name}
+              value={formData.firstname}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, first_name: text }))
+                setFormData((prev) => ({ ...prev, firstname: text }))
               }
             />
 
             <Text style={styles.label}>Last Name</Text>
             <TextInput
               style={styles.input}
-              value={formData.last_name}
+              value={formData.lastname}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, last_name: text }))
+                setFormData((prev) => ({ ...prev, lastname: text }))
+              }
+            />
+
+            <Text style={styles.label}>Nickame</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.nickname}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, nickname: text }))
               }
             />
 
@@ -192,14 +238,14 @@ export default function ProfileEditor() {
               }
             />
 
-            <Text style={styles.label}>Dorm</Text>
+            {/* <Text style={styles.label}>Dorm</Text>
             <TextInput
               style={styles.input}
               value={formData.dorm}
               onChangeText={(text) =>
                 setFormData((prev) => ({ ...prev, dorm: text }))
               }
-            />
+            /> */}
 
             {/* Tags Section */}
             <Text style={styles.label}>Tags</Text>
@@ -207,7 +253,7 @@ export default function ProfileEditor() {
               <View key={index} style={styles.tagInputContainer}>
                 <TextInput
                   style={styles.tagInput}
-                  value={tag}
+                  value={tag.tagname}
                   onChangeText={(text) => handleTagChange(index, text)}
                   placeholder="Enter tag"
                 />
@@ -295,7 +341,7 @@ export default function ProfileEditor() {
               <Link href="/profile" asChild>
                 <TouchableOpacity
                   style={styles.modalConfirmButton}
-                  onPress={() => setSaveModalVisible(false)}
+                  onPress={() => saveProcedure()}
                 >
                   <Text style={styles.modalConfirmButtonText}>Yes</Text>
                 </TouchableOpacity>

@@ -12,112 +12,136 @@ import {
   Animated,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
+import useApplicationContext from "@/hooks/useApplicationContext";
+import { RACHATDATA, ROTATINGCHATDATA } from "@/data/application";
+import { FloorChat, RAChat, RotatingChat, User, Event, Message} from "@/types";
 
 // Sample group chat data
-const INITIAL_MESSAGES = [
-  {
-    id: "1",
-    text: "Who's excited for tonight's game?",
-    sender: "Mike",
-    avatar: "https://via.placeholder.com/50",
-    timestamp: "2:30 PM",
-  },
-  {
-    id: "2",
-    text: "Lakers are looking strong this season!",
-    sender: "Sarah",
-    avatar: "https://via.placeholder.com/50",
-    timestamp: "2:31 PM",
-  },
-];
+// const INITIAL_MESSAGES = [
+//   {
+//     id: "1",
+//     text: "Who's excited for tonight's game?",
+//     sender: "Mike",
+//     avatar: "https://via.placeholder.com/50",
+//     timestamp: "2:30 PM",
+//   },
+//   {
+//     id: "2",
+//     text: "Lakers are looking strong this season!",
+//     sender: "Sarah",
+//     avatar: "https://via.placeholder.com/50",
+//     timestamp: "2:31 PM",
+//   },
+// ];
 
-const GROUP_MEMBERS = [
-  { name: "Mike", avatar: "https://via.placeholder.com/50" },
-  { name: "Sarah", avatar: "https://via.placeholder.com/50" },
-  { name: "John", avatar: "https://via.placeholder.com/50" },
-];
+// const GROUP_MEMBERS = [
+//   { name: "Mike", avatar: "https://via.placeholder.com/50" },
+//   { name: "Sarah", avatar: "https://via.placeholder.com/50" },
+//   { name: "John", avatar: "https://via.placeholder.com/50" },
+// ];
 
 export default function GroupChatPage() {
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
-  const [inputMessage, setInputMessage] = useState("");
+  const {
+    users,
+    rotatingChat,
+    setRotatingChat,
+  } = useApplicationContext();
+  //const [messages, setMessages] = useState<Message[]>(rotatingChat.messages);
+  const [inputMessage, setInputMessage] = useState<string>("");
   const flatListRef = useRef(null);
   const timerAnimation = useRef(new Animated.Value(1)).current;
-  const [timeRemaining, setTimeRemaining] = useState(1209600); // 2 weeks in seconds
+  //const [timeRemaining, setTimeRemaining] = useState<number>(rotatingChat.secondsRemaining); // 2 weeks in seconds
 
   // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 0) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setRotatingChat({ ...rotatingChat, secondsRemaining: rotatingChat.secondsRemaining - 1 });
+      if (rotatingChat.secondsRemaining <= 0) {
+        clearInterval(timer);
+        setRotatingChat({ ...rotatingChat, secondsRemaining: 0});
+      }
+      // setTimeRemaining((prev) => {
+      //   if (prev <= 0) {
+      //     clearInterval(timer);
+      //     return 0;
+      //   }
+      //   return prev - 1;
+      // });
 
       // Animate timer
       Animated.timing(timerAnimation, {
-        toValue: timeRemaining / 1209600, // Normalize to 0-1
+        toValue: rotatingChat.secondsRemaining / 1209600, // Normalize to 0-1
         duration: 1000,
         useNativeDriver: false,
       }).start();
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [rotatingChat]);
 
   // Convert seconds to days, hours, minutes
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const days = Math.floor(seconds / (24 * 3600));
     const hours = Math.floor((seconds % (24 * 3600)) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${days}d ${hours}h ${minutes}m`;
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (inputMessage.trim() === "") return;
 
-    const senders = GROUP_MEMBERS.map((member) => member.name);
-    const randomSender = senders[Math.floor(Math.random() * senders.length)];
+    const senders = rotatingChat.members.map((member) => member);
+    var randomSender = users[0].uid;
+    while (randomSender === users[0].uid) {
+      randomSender = senders[Math.floor(Math.random() * senders.length)];
+    } 
 
     const newMessage = {
-      id: String(messages.length + 1),
+      mid: rotatingChat.messages.length + 1,
       text: inputMessage,
-      sender: "You",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      avatar: "https://via.placeholder.com/50",
+      senderUid: users[0].uid,
+      avatar: users[0].picture,
+      timestamp: new Date(),
+      // .toLocaleTimeString([], {
+      //   hour: "2-digit",
+      //   minute: "2-digit",
+      // }),
     };
 
-    setMessages([...messages, newMessage]);
+    //setMessages([...messages, newMessage]);
+    setRotatingChat({ ...rotatingChat, messages: [...rotatingChat.messages, newMessage] });
     setInputMessage("");
 
     // Simulate group chat response
+    // NOTE: Ok so apparently this is being called every second. Is there a way that this only gets called once lol.
     setTimeout(() => {
       const responseMessage = {
-        id: String(messages.length + 2),
-        text: `${randomSender} liked that comment!`,
-        sender: "System",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        avatar: "https://via.placeholder.com/50",
+        mid: rotatingChat.messages.length + 2,
+        text: `${users[randomSender].nickname} liked that comment!`,
+        senderUid: -1,
+        timestamp: new Date(),
+        // .toLocaleTimeString([], {
+        //   hour: "2-digit",
+        //   minute: "2-digit",
+        // }),
+        avatar: users[randomSender].picture,
       };
-      setMessages((prevMessages) => [...prevMessages, responseMessage]);
+      setRotatingChat({ ...rotatingChat, messages: [...rotatingChat.messages, newMessage, responseMessage] });
+      
+      //setMessages((prevMessages) => [...prevMessages, responseMessage]);
     }, 1000);
   };
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+    // NOTE: commented this out becuase the rerendering bug causes this to get called over and over again.
+    // Or wait. Actually... This may be because the seconds are now linked to rotating chat as a whole.
+    //flatListRef.current?.scrollToEnd({ animated: true });
+  }, [rotatingChat]);
 
-  const renderMessage = ({ item }) => {
-    const isMe = item.sender === "You";
-    const isSystem = item.sender === "System";
+  const renderMessage = ({ item } : any) => {
+    const isMe = item.senderUid === 0;
+    const isSystem = item.senderUid === -1;
 
     return (
       <View
@@ -158,7 +182,7 @@ export default function GroupChatPage() {
           >
             {item.text}
           </Text>
-          <Text style={styles.timestamp}>{item.timestamp}</Text>
+          <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
         </View>
       </View>
     );
@@ -185,7 +209,7 @@ export default function GroupChatPage() {
               },
             ]}
           />
-          <Text style={styles.timerText}>{formatTime(timeRemaining)}</Text>
+          <Text style={styles.timerText}>{formatTime(rotatingChat.secondsRemaining)}</Text>
         </View>
 
         {/* Topic Pill */}
@@ -197,22 +221,22 @@ export default function GroupChatPage() {
 
       {/* Group Members Preview */}
       <View style={styles.memberPreview}>
-        {GROUP_MEMBERS.map((member, index) => (
+        {rotatingChat.members.map((member, index) => (
           <Image
             key={index}
-            source={{ uri: member.avatar }}
+            source={{ uri: users[member].picture }}
             style={styles.memberAvatar}
           />
         ))}
-        <Text style={styles.memberCount}>+{GROUP_MEMBERS.length} Members</Text>
+        <Text style={styles.memberCount}>+{rotatingChat.members.length} Members</Text>
       </View>
 
       {/* Messages List */}
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={rotatingChat.messages}
         renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.mid.toString()}
         contentContainerStyle={styles.messagesList}
         showsVerticalScrollIndicator={false}
       />
