@@ -7,24 +7,19 @@ import {
   ScrollView,
   Modal,
   StyleSheet,
+  Alert,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import useApplicationContext from "@/hooks/useApplicationContext";
-import { Event, User, Tag} from "@/types";
+import { Event, User, Tag } from "@/types";
 import { USERDATA, TAGDATA, EVENTDATA } from "@/data/application";
 
 export default function NewEventPage() {
+  const router = useRouter();
+  const { users, events, setEvents } = useApplicationContext();
 
-  const {
-    users,
-    events,
-    setEvents,
-  } = useApplicationContext();
-
-  useEffect(() => {
-
-  }, [users, events]);
+  useEffect(() => {}, [users, events]);
 
   const [formData, setFormData] = useState<Event>({
     eid: events.length,
@@ -37,48 +32,85 @@ export default function NewEventPage() {
     yesVotes: [users[0].uid],
     maybeVotes: [],
     noVotes: [],
-
   });
 
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  const [isTimePickerVisible, setTimePickerVisible] = useState(false);
+  const [isDateModalVisible, setDateModalVisible] = useState(false);
+  const [isTimeModalVisible, setTimeModalVisible] = useState(false);
+  const [tempDate, setTempDate] = useState(new Date());
   const [isSaveModalVisible, setSaveModalVisible] = useState(false);
+  const [isCancelModalVisible, setCancelModalVisible] = useState(false);
 
-  // Function to handle tag input
   const handleTagChange = (index: number, text: string) => {
     const newTags = [...formData.tags];
     newTags[index].tagname = text;
     setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
-  // Function to add a new tag
   const addTag = () => {
     setFormData((prev) => ({
       ...prev,
-      tags: [...prev.tags, {tid: TAGDATA.length, tagname: ""}],
+      tags: [...prev.tags, { tid: TAGDATA.length, tagname: "" }],
     }));
   };
 
-  // Function to remove a tag
   const removeTag = (index: number) => {
     const newTags = formData.tags.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
-  // Save event function
+  const isEventValid = () => {
+    const isTitleFilled = formData.title.trim() !== "";
+    const isLocationFilled = formData.location.trim() !== "";
+
+    const areTagsFilled =
+      formData.tags.length > 0 &&
+      formData.tags.every((tag) => tag.tagname.trim() !== "");
+
+    // Check if date is in the future
+    const isDateValid = formData.date > new Date();
+
+    return isTitleFilled && isLocationFilled && areTagsFilled && isDateValid;
+  };
+
   const saveEvent = async () => {
     try {
-      // Note: In a real app, you'd typically save to a backend or secure local storage
       console.log("Saving event:", formData);
 
-      // Implement your actual save logic here
       formData.eid = events.length;
       setEvents([...events, formData]);
     } catch (error) {
       console.error("Error saving event:", error);
+      Alert.alert("Save Error", "There was an error saving the event.");
     }
   };
 
+  const handleCancel = () => {
+    if (!formData.title && !formData.location && formData.tags.length === 0) {
+      router.push("/events");
+      return;
+    }
+
+    setCancelModalVisible(true);
+  };
+
+  const handleDateConfirm = () => {
+    setFormData((prev) => ({ ...prev, date: tempDate }));
+    setDateModalVisible(false);
+  };
+
+  const handleTimeConfirm = () => {
+    setFormData((prev) => ({
+      ...prev,
+      date: new Date(
+        prev.date.getFullYear(),
+        prev.date.getMonth(),
+        prev.date.getDate(),
+        tempDate.getHours(),
+        tempDate.getMinutes()
+      ),
+    }));
+    setTimeModalVisible(false);
+  };
   return (
     <View style={styles.container}>
       <ScrollView
@@ -100,29 +132,21 @@ export default function NewEventPage() {
             <Text style={styles.label}>Date</Text>
             <TouchableOpacity
               style={styles.input}
-              onPress={() => setDatePickerVisible(true)}
+              onPress={() => {
+                setTempDate(formData.date);
+                setDateModalVisible(true);
+              }}
             >
               <Text>{formData.date.toLocaleDateString()}</Text>
             </TouchableOpacity>
-            {isDatePickerVisible && (
-              <DateTimePicker
-                value={formData.date}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setDatePickerVisible(false);
-                  setFormData((prev) => ({
-                    ...prev,
-                    date: selectedDate || prev.date,
-                  }));
-                }}
-              />
-            )}
 
             <Text style={styles.label}>Time</Text>
             <TouchableOpacity
               style={styles.input}
-              onPress={() => setTimePickerVisible(true)}
+              onPress={() => {
+                setTempDate(formData.date);
+                setTimeModalVisible(true);
+              }}
             >
               <Text>
                 {formData.date.toLocaleTimeString([], {
@@ -131,20 +155,6 @@ export default function NewEventPage() {
                 })}
               </Text>
             </TouchableOpacity>
-            {isTimePickerVisible && (
-              <DateTimePicker
-                value={formData.date}
-                mode="time"
-                display="default"
-                onChange={(event, selectedTime) => {
-                  setTimePickerVisible(false);
-                  setFormData((prev) => ({
-                    ...prev,
-                    date: selectedTime || prev.date,
-                  }));
-                }}
-              />
-            )}
 
             <Text style={styles.label}>Location</Text>
             <TextInput
@@ -183,18 +193,103 @@ export default function NewEventPage() {
 
       {/* Bottom Button Container */}
       <View style={styles.bottomButtonContainer}>
-        <Link href="/events" asChild>
-          <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
         <TouchableOpacity
-          style={styles.saveButton}
-          onPress={() => setSaveModalVisible(true)}
+          style={[
+            styles.saveButton,
+            !isEventValid() && styles.disabledSaveButton,
+          ]}
+          disabled={!isEventValid()}
+          onPress={() => {
+            if (isEventValid()) {
+              setSaveModalVisible(true);
+            }
+          }}
         >
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text
+            style={[
+              styles.saveButtonText,
+              !isEventValid() && styles.disabledSaveButtonText,
+            ]}
+          >
+            Save
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Date Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isDateModalVisible}
+        onRequestClose={() => setDateModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Date</Text>
+            <DateTimePicker
+              value={tempDate}
+              mode="date"
+              display="spinner"
+              onChange={(event, selectedDate) => {
+                setTempDate(selectedDate || tempDate);
+              }}
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setDateModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={handleDateConfirm}
+              >
+                <Text style={styles.modalConfirmButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isTimeModalVisible}
+        onRequestClose={() => setTimeModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Time</Text>
+            <DateTimePicker
+              value={tempDate}
+              mode="time"
+              display="spinner"
+              onChange={(event, selectedTime) => {
+                setTempDate(selectedTime || tempDate);
+              }}
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setTimeModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={handleTimeConfirm}
+              >
+                <Text style={styles.modalConfirmButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Save Confirmation Modal */}
       <Modal
@@ -216,17 +311,50 @@ export default function NewEventPage() {
               >
                 <Text style={styles.modalCancelButtonText}>No</Text>
               </TouchableOpacity>
-              <Link href="/events" asChild>
-                <TouchableOpacity
-                  style={styles.modalConfirmButton}
-                  onPress={() => {
-                    saveEvent();
-                    setSaveModalVisible(false);
-                  }}
-                >
-                  <Text style={styles.modalConfirmButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </Link>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={() => {
+                  saveEvent();
+                  setSaveModalVisible(false);
+                  router.push("/events");
+                }}
+              >
+                <Text style={styles.modalConfirmButtonText}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isCancelModalVisible}
+        onRequestClose={() => setCancelModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Discard Event</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to cancel? All unsaved changes will be lost.
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setCancelModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={() => {
+                  setCancelModalVisible(false);
+                  router.push("/events");
+                }}
+              >
+                <Text style={styles.modalConfirmButtonText}>Yes</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -398,6 +526,58 @@ const styles = StyleSheet.create({
   },
   modalConfirmButtonText: {
     color: "white",
+    fontWeight: "bold",
+  },
+  disabledSaveButton: {
+    backgroundColor: "#FFB3B3", // Lighter red when disabled
+    opacity: 0.5,
+  },
+  disabledSaveButtonText: {
+    color: "#666", // Grayed out text
+  },
+  dateInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    padding: 10,
+    borderRadius: 5,
+    width: "30%",
+    textAlign: "center",
+  },
+  dateSeparator: {
+    fontSize: 18,
+    color: "#333",
+  },
+  timeInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    padding: 10,
+    borderRadius: 5,
+    width: "30%",
+    textAlign: "center",
+  },
+  timeSeparator: {
+    fontSize: 18,
+    color: "#333",
+    marginHorizontal: 5,
+  },
+  ampmButton: {
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  ampmButtonText: {
+    color: "#FF4444",
     fontWeight: "bold",
   },
 });

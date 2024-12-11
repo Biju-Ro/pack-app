@@ -4,8 +4,8 @@ import ProfilePage from "@/components/ProfilePage";
 
 const Page = () => {
   return (
-    <View style={styles.container}>
-      <ProfilePage navigation={undefined} />
+    <View style={styles.container} >
+      <ProfilePage navigation={undefined}  />
     </View>
   );
 };
