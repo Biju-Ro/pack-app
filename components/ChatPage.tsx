@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingTop: 60, // Increased from 50 to 60
     paddingBottom: 15,
     paddingHorizontal: 20,
@@ -192,6 +192,7 @@ const styles = StyleSheet.create({
   headerTitleContainer: {
     flexDirection: "row",
     alignItems: "center",
+    paddingLeft: 10,
   },
   headerAvatar: {
     width: 40,
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "red",
   },
   callButton: {
     padding: 10,

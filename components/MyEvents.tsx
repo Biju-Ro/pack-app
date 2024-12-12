@@ -93,10 +93,11 @@ export default function MyEventsPage() {
           <FontAwesome5 name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Events</Text>
-        <TouchableOpacity style={styles.plusButton}>
-          <Link href={"/newevent"}>
-            <Ionicons name="add" size={24} color="white" />
-          </Link>
+        <TouchableOpacity
+          style={styles.plusButton}
+          onPress={() => router.push("/newevent")}
+        >
+          <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
 

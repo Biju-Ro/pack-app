@@ -109,11 +109,10 @@ export default function ContactListPage() {
 
   return (
     <View style={styles.container}>
-      {/* Header with member count and back button */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/rotatingchat")} // Use navigation.back() to go back
+          onPress={() => router.push("/rotatingchat")}
         >
           <FontAwesome5 name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingTop: 40, // Adjust header position
     paddingBottom: 15,
     borderBottomWidth: 1,
@@ -155,7 +154,8 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: "red",
+    paddingLeft: 12,
   },
   listContainer: {
     paddingVertical: 10,
