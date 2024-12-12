@@ -14,7 +14,8 @@ import {
 import { FontAwesome5 } from "@expo/vector-icons";
 import useApplicationContext from "@/hooks/useApplicationContext";
 import { RACHATDATA, ROTATINGCHATDATA } from "@/data/application";
-import { FloorChat, RAChat, RotatingChat, User, Event, Message} from "@/types";
+import { FloorChat, RAChat, RotatingChat, User, Event, Message } from "@/types";
+import { router, Stack, useNavigation } from "expo-router";
 
 // Sample group chat data
 // const INITIAL_MESSAGES = [
@@ -41,11 +42,8 @@ import { FloorChat, RAChat, RotatingChat, User, Event, Message} from "@/types";
 // ];
 
 export default function GroupChatPage() {
-  const {
-    users,
-    rotatingChat,
-    setRotatingChat,
-  } = useApplicationContext();
+  const navigation = useNavigation();
+  const { users, rotatingChat, setRotatingChat } = useApplicationContext();
   //const [messages, setMessages] = useState<Message[]>(rotatingChat.messages);
   const [inputMessage, setInputMessage] = useState<string>("");
   const flatListRef = useRef(null);
@@ -55,10 +53,13 @@ export default function GroupChatPage() {
   // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
-      setRotatingChat({ ...rotatingChat, secondsRemaining: rotatingChat.secondsRemaining - 1 });
+      setRotatingChat({
+        ...rotatingChat,
+        secondsRemaining: rotatingChat.secondsRemaining - 1,
+      });
       if (rotatingChat.secondsRemaining <= 0) {
         clearInterval(timer);
-        setRotatingChat({ ...rotatingChat, secondsRemaining: 0});
+        setRotatingChat({ ...rotatingChat, secondsRemaining: 0 });
       }
       // setTimeRemaining((prev) => {
       //   if (prev <= 0) {
@@ -94,7 +95,7 @@ export default function GroupChatPage() {
     var randomSender = users[0].uid;
     while (randomSender === users[0].uid) {
       randomSender = senders[Math.floor(Math.random() * senders.length)];
-    } 
+    }
 
     const newMessage = {
       mid: rotatingChat.messages.length + 1,
@@ -109,7 +110,10 @@ export default function GroupChatPage() {
     };
 
     //setMessages([...messages, newMessage]);
-    setRotatingChat({ ...rotatingChat, messages: [...rotatingChat.messages, newMessage] });
+    setRotatingChat({
+      ...rotatingChat,
+      messages: [...rotatingChat.messages, newMessage],
+    });
     setInputMessage("");
 
     // Simulate group chat response
@@ -126,8 +130,11 @@ export default function GroupChatPage() {
         // }),
         avatar: users[randomSender].picture,
       };
-      setRotatingChat({ ...rotatingChat, messages: [...rotatingChat.messages, newMessage, responseMessage] });
-      
+      setRotatingChat({
+        ...rotatingChat,
+        messages: [...rotatingChat.messages, newMessage, responseMessage],
+      });
+
       //setMessages((prevMessages) => [...prevMessages, responseMessage]);
     }, 1000);
   };
@@ -139,7 +146,7 @@ export default function GroupChatPage() {
     //flatListRef.current?.scrollToEnd({ animated: true });
   }, [rotatingChat]);
 
-  const renderMessage = ({ item } : any) => {
+  const renderMessage = ({ item }: any) => {
     const isMe = item.senderUid === 0;
     const isSystem = item.senderUid === -1;
 
@@ -182,7 +189,9 @@ export default function GroupChatPage() {
           >
             {item.text}
           </Text>
-          <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
+          <Text style={styles.timestamp}>
+            {item.timestamp.toLocaleTimeString()}
+          </Text>
         </View>
       </View>
     );
@@ -192,7 +201,10 @@ export default function GroupChatPage() {
     <View style={styles.container}>
       {/* Header with Timer and Topic */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push("/(tabs)")}
+        >
           <FontAwesome5 name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
 
@@ -209,7 +221,9 @@ export default function GroupChatPage() {
               },
             ]}
           />
-          <Text style={styles.timerText}>{formatTime(rotatingChat.secondsRemaining)}</Text>
+          <Text style={styles.timerText}>
+            {formatTime(rotatingChat.secondsRemaining)}
+          </Text>
         </View>
 
         {/* Topic Pill */}
@@ -220,7 +234,10 @@ export default function GroupChatPage() {
       </View>
 
       {/* Group Members Preview */}
-      <View style={styles.memberPreview}>
+      <TouchableOpacity
+        style={styles.memberPreview}
+        onPress={() => router.push("/members")} // Navigate to the 'Members' screen
+      >
         {rotatingChat.members.map((member, index) => (
           <Image
             key={index}
@@ -228,8 +245,10 @@ export default function GroupChatPage() {
             style={styles.memberAvatar}
           />
         ))}
-        <Text style={styles.memberCount}>+{rotatingChat.members.length} Members</Text>
-      </View>
+        <Text style={styles.memberCount}>
+          +{rotatingChat.members.length} Members
+        </Text>
+      </TouchableOpacity>
 
       {/* Messages List */}
       <FlatList
@@ -244,12 +263,8 @@ export default function GroupChatPage() {
       {/* Input Area */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
         style={styles.inputContainer}
       >
-        <TouchableOpacity style={styles.attachButton}>
-          <FontAwesome5 name="plus" size={20} color="#666" />
-        </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={inputMessage}
@@ -265,6 +280,7 @@ export default function GroupChatPage() {
           />
         </TouchableOpacity>
       </KeyboardAvoidingView>
+      <Stack.Screen options={{ headerShown: false }} />
     </View>
   );
 }
@@ -279,7 +295,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 50,
+    paddingTop: 65,
     paddingBottom: 15,
     paddingHorizontal: 20,
     backgroundColor: "#ffffff",
@@ -296,7 +312,7 @@ const styles = StyleSheet.create({
   timerContainer: {
     flex: 1,
     height: 30,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "red",
     borderRadius: 15,
     marginHorizontal: 10,
     justifyContent: "center",
@@ -305,19 +321,19 @@ const styles = StyleSheet.create({
   timerBar: {
     position: "absolute",
     height: "100%",
-    backgroundColor: "#dc3545",
+    backgroundColor: "red",
     borderRadius: 15,
   },
   timerText: {
     textAlign: "center",
-    color: "#333",
+    color: "white",
     fontWeight: "bold",
     zIndex: 1,
   },
   // Topic Pill Styles
   topicPill: {
     flexDirection: "row",
-    backgroundColor: "#dc3545",
+    backgroundColor: "red",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -371,7 +387,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "red",
   },
   callButton: {
     padding: 10,
@@ -404,7 +420,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   myMessageBubble: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "red",
     borderBottomRightRadius: 0,
   },
   otherMessageBubble: {
@@ -427,12 +443,16 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 10,
-    color: "#666",
+    color: "#D3D3D3",
     marginTop: 5,
     alignSelf: "flex-end",
   },
   // Input Container Styles
   inputContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
@@ -440,14 +460,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderTopWidth: 1,
     borderTopColor: "#e0e0e0",
-  },
-  attachButton: {
-    marginRight: 10,
-    padding: 10,
+    height: 100,
   },
   input: {
     flex: 1,
-    maxHeight: 100,
+    maxHeight: 500,
     backgroundColor: "#f5f5f5",
     borderRadius: 20,
     paddingHorizontal: 15,

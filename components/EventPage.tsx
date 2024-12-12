@@ -9,44 +9,14 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Event } from "@/types";
 import useApplicationContext from "@/hooks/useApplicationContext";
 import { USERDATA } from "@/data/application";
 
 const EventPage = () => {
-  // const [events, setEvents] = useState<Event[]>([
-  //   {
-  //     id: "1",
-  //     name: "Summer Tech Conference",
-  //     host: "Tech Innovations Inc.",
-  //     date: "2024-07-15",
-  //     time: "09:00 AM",
-  //     location: "San Francisco Convention Center",
-  //     tags: ["Technology", "Networking", "Innovation"],
-  //     yesCount: 0,
-  //     maybeCount: 0,
-  //     noCount: 0,
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Startup Networking Night",
-  //     host: "Founders Network",
-  //     date: "2024-06-22",
-  //     time: "06:30 PM",
-  //     location: "Downtown Coworking Space",
-  //     tags: ["Startups", "Networking", "Entrepreneurs"],
-  //     yesCount: 0,
-  //     maybeCount: 0,
-  //     noCount: 0,
-  //   },
-  // ]);
-
-  const {
-    users,
-    events,
-    setEvents,
-  } = useApplicationContext();
+  const router = useRouter();
+  const { users, events, setEvents } = useApplicationContext();
 
   // Call back function for comparing two dates (to be used in array sorting)
   function compareDates(dateA: Date, dateB: Date) {
@@ -59,8 +29,11 @@ const EventPage = () => {
     }
   }
 
-  const [attendingEvents, setAttendingEvents] = useState<Event[]>(events.filter((event) => event.yesVotes.includes(USERDATA[0].uid)).sort(
-    (eventa, eventb) => compareDates(eventa.date, eventb.date)));
+  const [attendingEvents, setAttendingEvents] = useState<Event[]>(
+    events
+      .filter((event) => event.yesVotes.includes(USERDATA[0].uid))
+      .sort((eventa, eventb) => compareDates(eventa.date, eventb.date))
+  );
   const [confirmNoEvent, setConfirmNoEvent] = useState<Event | null>(null);
 
   useEffect(() => {
@@ -71,7 +44,6 @@ const EventPage = () => {
     eventId: number,
     type: "yes" | "maybe" | "no"
   ) => {
-
     switch (type) {
       case "yes":
         break;
@@ -84,9 +56,7 @@ const EventPage = () => {
 
     tempEvents.map((event) => {
       if (event.eid === eventId) {
-
         switch (type) {
-
           // If the user clicks the yes button
           case "yes":
             if (event.yesVotes.includes(USERDATA[0].uid)) {
@@ -96,19 +66,24 @@ const EventPage = () => {
                 const tempAttendingEvents = attendingEvents;
                 tempAttendingEvents.map((e) => {
                   if (e.eid === eventId) {
-                    tempAttendingEvents.splice(tempAttendingEvents.indexOf(e), 1);
+                    tempAttendingEvents.splice(
+                      tempAttendingEvents.indexOf(e),
+                      1
+                    );
                     setAttendingEvents([...tempAttendingEvents]);
                   }
                 });
               }
-            }
-            else {
+            } else {
               event.yesVotes.push(USERDATA[0].uid);
               if (event.noVotes.includes(USERDATA[0].uid)) {
                 event.noVotes.splice(event.noVotes.indexOf(USERDATA[0].uid), 1);
               }
               if (event.maybeVotes.includes(USERDATA[0].uid)) {
-                event.maybeVotes.splice(event.maybeVotes.indexOf(USERDATA[0].uid), 1);
+                event.maybeVotes.splice(
+                  event.maybeVotes.indexOf(USERDATA[0].uid),
+                  1
+                );
               }
               // Add to attending events if not already there.
               setAttendingEvents([...attendingEvents, event]);
@@ -124,16 +99,21 @@ const EventPage = () => {
                 const tempAttendingEvents = attendingEvents;
                 tempAttendingEvents.map((e) => {
                   if (e.eid === eventId) {
-                    tempAttendingEvents.splice(tempAttendingEvents.indexOf(e), 1);
+                    tempAttendingEvents.splice(
+                      tempAttendingEvents.indexOf(e),
+                      1
+                    );
                     setAttendingEvents([...tempAttendingEvents]);
                   }
                 });
               }
             }
             if (event.maybeVotes.includes(USERDATA[0].uid)) {
-              event.maybeVotes.splice(event.noVotes.indexOf(USERDATA[0].uid), 1);
-            }
-            else {
+              event.maybeVotes.splice(
+                event.maybeVotes.indexOf(USERDATA[0].uid),
+                1
+              );
+            } else {
               event.maybeVotes.push(USERDATA[0].uid);
             }
             if (event.noVotes.includes(USERDATA[0].uid)) {
@@ -145,12 +125,15 @@ const EventPage = () => {
           case "no":
             if (event.yesVotes.includes(USERDATA[0].uid)) {
               event.yesVotes.splice(event.yesVotes.indexOf(USERDATA[0].uid), 1);
-              // Remove from attending events if already there
+
               if (attendingEvents.some((e) => e.eid === eventId)) {
                 const tempAttendingEvents = attendingEvents;
                 tempAttendingEvents.map((e) => {
                   if (e.eid === eventId) {
-                    tempAttendingEvents.splice(tempAttendingEvents.indexOf(e), 1);
+                    tempAttendingEvents.splice(
+                      tempAttendingEvents.indexOf(e),
+                      1
+                    );
                     setAttendingEvents([...tempAttendingEvents]);
                   }
                 });
@@ -162,7 +145,10 @@ const EventPage = () => {
               event.noVotes.push(USERDATA[0].uid);
             }
             if (event.maybeVotes.includes(USERDATA[0].uid)) {
-              event.maybeVotes.splice(event.noVotes.indexOf(USERDATA[0].uid), 1);
+              event.maybeVotes.splice(
+                event.maybeVotes.indexOf(USERDATA[0].uid),
+                1
+              );
             }
             break;
           default:
@@ -214,63 +200,137 @@ const EventPage = () => {
   //   }
   // };
 
-  const renderEventCard = (event: Event, section: string) => (
+  const renderEventCard = (event: Event) => (
     <View key={event.eid} style={styles.eventCard}>
-      <Text style={styles.eventName}>{event.title}</Text>
-      <View style={styles.eventDetails}>
-        <Text style={styles.eventText}>Host: {users[event.hostuid].nickname}</Text>
-        <Text style={styles.eventText}>Date: {event.date.toLocaleDateString()}</Text>
-        <Text style={styles.eventText}>Time: {event.date.toLocaleTimeString().slice(0, -3)}</Text>
-        <Text style={styles.eventText}>Location: {event.location}</Text>
+      <View style={styles.eventCardHeader}>
+        <Text style={styles.eventTitle} numberOfLines={1}>
+          {event.title}
+        </Text>
+        <View style={styles.eventHeaderRight}>
+          <View style={styles.eventDateBadge}>
+            <Text style={styles.eventDateText}>
+              {event.date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </Text>
+          </View>
+          {event.hostuid === USERDATA[0].uid && (
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => router.push(`/editevent/${event.eid}`)}
+            >
+              <Ionicons name="pencil" size={16} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
-        {/* Tags Section */}
-        <View style={styles.tagsContainer}>
-          {event.tags.map((tag, index) => (
+      <View
+        style={[
+          styles.eventCardBody,
+          event.hostuid === USERDATA[0].uid && styles.userCreatedEventBody,
+        ]}
+      >
+        <View style={styles.eventDetailsContainer}>
+          <View style={styles.eventDetailRow}>
+            <Ionicons name="person-outline" size={16} color="#666" />
+            <Text style={styles.eventDetailText}>
+              {users[event.hostuid].nickname}
+            </Text>
+          </View>
+          <View style={styles.eventDetailRow}>
+            <Ionicons name="location-outline" size={16} color="#666" />
+            <Text style={styles.eventDetailText} numberOfLines={1}>
+              {event.location}
+            </Text>
+          </View>
+          <View style={styles.eventDetailRow}>
+            <Ionicons name="time-outline" size={16} color="#666" />
+            <Text style={styles.eventDetailText}>
+              {event.date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.tagContainer}>
+          {event.tags.slice(0, 3).map((tag, index) => (
             <View key={index} style={styles.tagPill}>
               <Text style={styles.tagText}>{tag.tagname}</Text>
             </View>
           ))}
         </View>
 
-        {/* Attendance Buttons */}
-        <View style={styles.buttonContainer}>
+        <View style={styles.attendanceButtonContainer}>
           <TouchableOpacity
             style={[
               styles.attendanceButton,
               styles.yesButton,
-              event.yesVotes.includes(USERDATA[0].uid) && styles.selectedYesButton,
+              event.yesVotes.includes(USERDATA[0].uid) &&
+                styles.selectedYesButton,
             ]}
             onPress={() => handleAttendanceClick(event.eid, "yes")}
-            // disabled={event.userResponse === "yes"}
           >
-            <Text style={styles.buttonText}>Yes ({event.yesVotes.length})</Text>
+            <Text style={styles.attendanceButtonText}>
+              Yes ({event.yesVotes.length})
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.attendanceButton,
               styles.maybeButton,
-              event.maybeVotes.includes(USERDATA[0].uid) && styles.selectedMaybeButton,
+              event.maybeVotes.includes(USERDATA[0].uid) &&
+                styles.selectedMaybeButton,
             ]}
             onPress={() => handleAttendanceClick(event.eid, "maybe")}
-            //disabled={event.userResponse === "maybe"}
           >
-            <Text style={styles.buttonText}>Maybe ({event.maybeVotes.length})</Text>
+            <Text style={styles.attendanceButtonText}>
+              Maybe ({event.maybeVotes.length})
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.attendanceButton,
               styles.noButton,
-              event.noVotes.includes(USERDATA[0].uid) && styles.selectedNoButton,
+              event.noVotes.includes(USERDATA[0].uid) &&
+                styles.selectedNoButton,
             ]}
             onPress={() => handleAttendanceClick(event.eid, "no")}
-            //disabled={event.userResponse === "no"}
           >
-            <Text style={styles.buttonText}>No ({event.noVotes.length})</Text>
+            <Text style={styles.attendanceButtonText}>
+              No ({event.noVotes.length})
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
+
+  const renderEventSection = (
+    title: string,
+    filterCondition: (event: Event) => boolean,
+    emptyMessage: string
+  ) => {
+    const filteredEvents = events
+      .filter(filterCondition)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    if (filteredEvents.length === 0) return null;
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        {filteredEvents.length > 0 ? (
+          filteredEvents.map(renderEventCard)
+        ) : (
+          <Text style={styles.emptyStateText}>{emptyMessage}</Text>
+        )}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -303,64 +363,54 @@ const EventPage = () => {
           </View>
         </View>
       </Modal>
-
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Events</Text>
-        <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.headerTitle}>Events</Text>
+        <TouchableOpacity
+          style={styles.myEventsButton}
+          onPress={() => router.push("/myevents")}
+        >
+          <Text style={styles.myEventsTitle}>My Events</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.plusButton}>
           <Link href={"/newevent"}>
-            <Ionicons name="add" size={24} color="black" />
+            <Ionicons name="add" size={24} color="white" />
           </Link>
         </TouchableOpacity>
       </View>
 
-      {/* Event Sections */}
-      <ScrollView>
-        {attendingEvents.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Events I'm Attending</Text>
-            {events.filter((event) => event.date > new Date() && attendingEvents.includes(event)).length > 0 ? (
-            <>
-            {events.filter((event) => event.date > new Date() && attendingEvents.includes(event)).sort((eventa, eventb) => compareDates(eventa.date, eventb.date)).map((event) => renderEventCard(event, "attending"))}
-            </>
-          ) : (
-            <Text style={styles.noEventsText}>No Events listed as Attending</Text>
-          )}
-          </View>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderEventSection(
+          "Attending",
+          (event) =>
+            event.date > new Date() && event.yesVotes.includes(USERDATA[0].uid),
+          "No upcoming events you're attending"
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today's Events</Text>
-          {events.filter((event) => event.date.getDay() === new Date().getDay() && event.date > new Date() && !attendingEvents.includes(event)).length > 0 ? (
-            <>
-            {events.filter((event) => event.date.getDay() === new Date().getDay() && event.date > new Date() && !attendingEvents.includes(event)).sort((eventa, eventb) => compareDates(eventa.date, eventb.date)).map((event) => renderEventCard(event, "today"))}
-            </>
-          ) : (
-            <Text style={styles.noEventsText}>No unmarked events today</Text>
-          )}
-        </View>
+        {renderEventSection(
+          "Today's Events",
+          (event) =>
+            event.date.getDay() === new Date().getDay() &&
+            event.date > new Date(),
+          "No events today"
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          {events.filter((event) => event.date > new Date()).length > 0 ? (
-            <>
-            {events.filter((event) => event.date > new Date() && event.date.getDay() != new Date().getDay() && !attendingEvents.includes(event)).sort((eventa, eventb) => compareDates(eventa.date, eventb.date)).map((event) => renderEventCard(event, "upcoming"))}
-            </>
-          ) : (
-            <Text style={styles.noEventsText}>No upcoming events</Text>
-          )}
-        </View>
+        {renderEventSection(
+          "Upcoming Events",
+          (event) =>
+            event.date > new Date() &&
+            event.date.getDay() !== new Date().getDay() &&
+            !event.yesVotes.includes(USERDATA[0].uid),
+          "No upcoming events"
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Past Events</Text>
-          {events.filter((event) => event.date < new Date()).length > 0 ? (
-            <>
-            {events.filter((event) => event.date < new Date()).sort((eventa, eventb) => compareDates(eventa.date, eventb.date)).map((event) => renderEventCard(event, "past"))}
-            </>
-          ) : (
-            <Text style={styles.noEventsText}>No past events</Text>
-          )}
-        </View>
+        {renderEventSection(
+          "Past Events",
+          (event) => event.date < new Date(),
+          "No past events"
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -369,65 +419,104 @@ const EventPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F7F7F7",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
-    backgroundColor: "white",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
+  myEventsButton: {
+    backgroundColor: "red",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignItems: "flex-end",
+    left: 60,
+  },
+
   headerTitle: {
-    fontSize: 22,
+    fontSize: 25,
     fontWeight: "bold",
-    color: "black",
+    color: "#FF4444",
   },
-  addButton: {
-    padding: 5,
+  myEventsTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "white",
+  },
+  plusButton: {
+    alignItems: "flex-end",
+    backgroundColor: "red",
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  scrollViewContent: {
+    paddingVertical: 15,
   },
   section: {
-    marginVertical: 10,
-    paddingHorizontal: 15,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "black",
-  },
-  noEventsText: {
-    color: "black",
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 15,
   },
   eventCard: {
     backgroundColor: "white",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  eventName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "black",
+
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    flex: 1,
+    marginRight: 10,
   },
-  eventDetails: {
-    marginBottom: 10,
+  eventDateBadge: {
+    backgroundColor: "#F0F0F0",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
   },
-  eventText: {
-    color: "black",
-    marginBottom: 5,
+  eventDateText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#666",
   },
-  tagsContainer: {
+  eventCardBody: {
+    padding: 15,
+  },
+  eventDetailsContainer: {
+    marginBottom: 15,
+  },
+  eventDetailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  eventDetailText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: "#666",
+  },
+  tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginVertical: 10,
+    marginBottom: 15,
   },
   tagPill: {
     backgroundColor: "red",
@@ -438,41 +527,48 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   tagText: {
-    color: "white",
     fontSize: 12,
+    color: "white",
   },
-  buttonContainer: {
+  attendanceButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
   attendanceButton: {
     flex: 1,
-    padding: 10,
-    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderRadius: 8,
     marginHorizontal: 5,
     borderWidth: 1,
   },
+  attendanceButtonText: {
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "500",
+  },
   yesButton: {
-    borderColor: "green",
+    borderColor: "#4CAF50",
   },
   maybeButton: {
-    borderColor: "orange",
+    borderColor: "#FFC107",
   },
   noButton: {
-    borderColor: "red",
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "black",
+    borderColor: "#F44336",
   },
   selectedYesButton: {
-    backgroundColor: "rgba(0,255,0,0.1)",
+    backgroundColor: "rgba(76, 175, 80, 0.1)",
   },
   selectedMaybeButton: {
-    backgroundColor: "rgba(255,255,0,0.1)",
+    backgroundColor: "rgba(255, 193, 7, 0.1)",
   },
   selectedNoButton: {
-    backgroundColor: "rgba(255,0,0,0.1)",
+    backgroundColor: "rgba(244, 67, 54, 0.1)",
+  },
+  emptyStateText: {
+    textAlign: "center",
+    color: "#999",
+    fontStyle: "italic",
   },
   modalOverlay: {
     flex: 1,
@@ -524,6 +620,25 @@ const styles = StyleSheet.create({
   modalConfirmButtonText: {
     color: "white",
     textAlign: "center",
+  },
+  eventCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  eventHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    marginLeft: 10,
+    padding: 5,
+  },
+  userCreatedEventBody: {
+    backgroundColor: "rgba(255, 68, 68, 0.05)", // Light shade of red
   },
 });
 

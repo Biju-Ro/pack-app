@@ -5,12 +5,10 @@ import React from "react";
 import { Feather } from "@expo/vector-icons";
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const icon = {
-    index: (props: any) => (
-      <Feather name="message-square" size={24} {...props} />
-    ),
-    events: (props: any) => <Feather name="calendar" size={24} {...props} />,
-    profile: (props: any) => <Feather name="user" size={24} {...props} />,
+  const icon: { [key: string]: (props: any) => JSX.Element } = {
+    index: (props) => <Feather name="message-square" size={24} {...props} />,
+    events: (props) => <Feather name="calendar" size={24} {...props} />,
+    profile: (props) => <Feather name="user" size={24} {...props} />,
   };
 
   return (
@@ -23,6 +21,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             : options.title !== undefined
             ? options.title
             : route.name;
+
+        // Ensure the label is always a string
+        const labelText = typeof label === "string" ? label : route.name;
 
         const isFocused = state.index === index;
 
@@ -45,6 +46,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           });
         };
 
+        // Safely access the icon by checking if the route name exists in the icon object
+        const IconComponent = icon[route.name] || icon.index; // Default to 'index' icon if route name is not found
+
         return (
           <TouchableOpacity
             key={route.name}
@@ -61,15 +65,15 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 isFocused && styles.bubbleFocused, // Add red bubble when focused
               ]}
             >
-              {icon[route.name]({
-                color: isFocused ? "#fff" : "#222", // Icon color changes to white if focused
-              })}
+              <IconComponent
+                color={isFocused ? "#fff" : "#222"} // Icon color changes to white if focused
+              />
               <Text
                 style={{
                   color: isFocused ? "#fff" : "#222", // Text color changes to white if focused
                 }}
               >
-                {label}
+                {labelText} {/* Ensure the label is a string */}
               </Text>
             </View>
           </TouchableOpacity>

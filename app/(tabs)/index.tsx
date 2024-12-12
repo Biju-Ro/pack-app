@@ -2,7 +2,13 @@ import { StyleSheet, View, Text } from "react-native";
 import React, { useEffect, useState } from "react";
 import ChatDashboard from "@/components/ChatDashboard";
 import ApplicationContext from "@/contexts/ApplicationContext";
-import { USERDATA, EVENTDATA, RACHATDATA, FLOORCHATDATA, ROTATINGCHATDATA } from "@/data/application";
+import {
+  USERDATA,
+  EVENTDATA,
+  RACHATDATA,
+  FLOORCHATDATA,
+  ROTATINGCHATDATA,
+} from "@/data/application";
 import { User, Event, RAChat, FloorChat, RotatingChat } from "@/types";
 
 const Page = () => {

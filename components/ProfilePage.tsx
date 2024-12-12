@@ -10,14 +10,10 @@ import {
   Pressable,
 } from "react-native";
 
-// Import user data from JSON
-import userData from "../data/user.json";
-//import useApplication from "@/hooks/useApplication";
 import { User } from "@/types";
 import useApplicationContext from "@/hooks/useApplicationContext";
 
 export default function ProfilePage({ navigation }: { navigation: any }) {
-
   const {
     users,
     setUsers,
@@ -35,6 +31,8 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
     console.log("Showing main user in profile page:", (users as User[])[0]);
   }, [users, events]);
 
+  const user = (users as User[])[0];
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -44,7 +42,7 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
       <View style={styles.imageWrapper}>
         <Image
           source={{
-            uri: (users as User[])[0].picture,
+            uri: user.picture,
           }}
           style={styles.image}
         />
@@ -52,28 +50,26 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
 
       {/* Profile Card */}
       <View style={styles.card}>
-        {/* Name */}
-        <Text style={styles.name}>
-          {(users as User[])[0].firstname} {(users as User[])[0].lastname}
+        {/* Nickname and Full Name */}
+        <Text style={styles.nickname}>{user.nickname}</Text>
+        <Text style={styles.fullName}>
+          {user.firstname} {user.lastname}
         </Text>
 
         {/* Details */}
         <View style={styles.detailsContainer}>
-          <Text style={styles.details}>Major: {(users as User[])[0].major}</Text>
-          <Text style={styles.details}>Minor: {(users as User[])[0].minor}</Text>
-          {/* <Text style={styles.details}>Dorm: {userData.dorm}</Text> */}
+          <Text style={styles.details}>Major: {user.major}</Text>
+          <Text style={styles.details}>Minor: {user.minor}</Text>
         </View>
 
         {/* Tags */}
         <View style={styles.tagContainer}>
-          {(users as User[])[0].tags.map((tag, tid) => (
+          {user.tags.map((tag, tid) => (
             <View key={tid} style={styles.tag}>
               <Text style={styles.tagText}>{tag.tagname}</Text>
             </View>
           ))}
         </View>
-
-        {/* Edit Profile Button */}
       </View>
       <Link href="/profileedit" style={styles.editButton}>
         <Pressable>
@@ -87,14 +83,13 @@ export default function ProfilePage({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#f5f5f5",
     alignItems: "center",
-    paddingTop: 80,
+    paddingTop: 150,
     paddingBottom: 20,
   },
   imageWrapper: {
     position: "absolute",
-    top: 30,
+    top: 100,
     alignItems: "center",
     width: "100%",
     zIndex: 10,
@@ -122,16 +117,21 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 10,
     width: "85%",
-    marginTop: 100,
+    marginTop: 120, // Increased to bring card down after photo
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
-  name: {
-    fontSize: 26,
+  nickname: {
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 5,
     color: "#333",
     letterSpacing: 0.5,
+  },
+  fullName: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 15,
   },
   detailsContainer: {
     alignItems: "center",
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   tag: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "red",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   editButton: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "red",
     borderRadius: 25,
     paddingVertical: 12,
     paddingHorizontal: 35,

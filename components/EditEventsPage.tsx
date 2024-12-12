@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,57 +9,72 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { Link, Stack, useRouter } from "expo-router";
+import { Link, useRouter, useLocalSearchParams, Stack } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import useApplicationContext from "@/hooks/useApplicationContext";
 import { Event, User, Tag } from "@/types";
-import { USERDATA, TAGDATA, EVENTDATA } from "@/data/application";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { USERDATA, TAGDATA } from "@/data/application";
+import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function NewEventPage() {
+export default function EditEventPage() {
   const router = useRouter();
+  const { eid } = useLocalSearchParams();
   const { users, events, setEvents } = useApplicationContext();
 
-  useEffect(() => {}, [users, events]);
-
-  const [formData, setFormData] = useState<Event>({
-    eid: events.length,
-    title: "",
-    hostname: users[0].nickname,
-    hostuid: users[0].uid,
-    date: new Date(),
-    location: "",
-    tags: [],
-    yesVotes: [users[0].uid],
-    maybeVotes: [],
-    noVotes: [],
-  });
-
+  const [formData, setFormData] = useState<Event | null>(null);
   const [isDateModalVisible, setDateModalVisible] = useState(false);
   const [isTimeModalVisible, setTimeModalVisible] = useState(false);
   const [tempDate, setTempDate] = useState(new Date());
-  const [isSaveModalVisible, setSaveModalVisible] = useState(false);
-  const [isCancelModalVisible, setCancelModalVisible] = useState(false);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  useEffect(() => {
+    // Find the event to edit
+    const eventToEdit = events.find(
+      (event) => event.eid === parseInt(eid as string)
+    );
+
+    if (eventToEdit) {
+      setFormData({
+        ...eventToEdit,
+        date: new Date(eventToEdit.date), // Ensure a new Date object
+      });
+    } else {
+      // If event not found, go back to events page
+      router.push("/events");
+    }
+  }, [eid, events]);
 
   const handleTagChange = (index: number, text: string) => {
-    const newTags = [...formData.tags];
-    newTags[index].tagname = text;
-    setFormData((prev) => ({ ...prev, tags: newTags }));
+    if (formData) {
+      const newTags = [...formData.tags];
+      newTags[index].tagname = text;
+      setFormData((prev) => (prev ? { ...prev, tags: newTags } : null));
+    }
   };
 
   const addTag = () => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: [...prev.tags, { tid: TAGDATA.length, tagname: "" }],
-    }));
+    if (formData) {
+      setFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              tags: [...prev.tags, { tid: TAGDATA.length, tagname: "" }],
+            }
+          : null
+      );
+    }
   };
 
   const removeTag = (index: number) => {
-    const newTags = formData.tags.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, tags: newTags }));
+    if (formData) {
+      const newTags = formData.tags.filter((_, i) => i !== index);
+      setFormData((prev) => (prev ? { ...prev, tags: newTags } : null));
+    }
   };
 
   const isEventValid = () => {
+    if (!formData) return false;
+
     const isTitleFilled = formData.title.trim() !== "";
     const isLocationFilled = formData.location.trim() !== "";
 
@@ -67,51 +82,60 @@ export default function NewEventPage() {
       formData.tags.length > 0 &&
       formData.tags.every((tag) => tag.tagname.trim() !== "");
 
-    // Check if date is in the future
     const isDateValid = formData.date > new Date();
 
     return isTitleFilled && isLocationFilled && areTagsFilled && isDateValid;
   };
 
-  const saveEvent = async () => {
-    try {
-      console.log("Saving event:", formData);
-
-      formData.eid = events.length;
-      setEvents([...events, formData]);
-    } catch (error) {
-      console.error("Error saving event:", error);
-      Alert.alert("Save Error", "There was an error saving the event.");
+  const saveEvent = () => {
+    if (formData) {
+      setEvents((currentEvents) =>
+        currentEvents.map((event) =>
+          event.eid === formData.eid ? formData : event
+        )
+      );
+      router.push("/events");
     }
   };
 
-  const handleCancel = () => {
-    if (!formData.title && !formData.location && formData.tags.length === 0) {
+  const deleteEvent = () => {
+    if (formData) {
+      setEvents((currentEvents) =>
+        currentEvents.filter((event) => event.eid !== formData.eid)
+      );
       router.push("/events");
-      return;
     }
-
-    setCancelModalVisible(true);
   };
 
   const handleDateConfirm = () => {
-    setFormData((prev) => ({ ...prev, date: tempDate }));
-    setDateModalVisible(false);
+    if (formData) {
+      setFormData((prev) => (prev ? { ...prev, date: tempDate } : null));
+      setDateModalVisible(false);
+    }
   };
 
   const handleTimeConfirm = () => {
-    setFormData((prev) => ({
-      ...prev,
-      date: new Date(
-        prev.date.getFullYear(),
-        prev.date.getMonth(),
-        prev.date.getDate(),
-        tempDate.getHours(),
-        tempDate.getMinutes()
-      ),
-    }));
-    setTimeModalVisible(false);
+    if (formData) {
+      setFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              date: new Date(
+                prev.date.getFullYear(),
+                prev.date.getMonth(),
+                prev.date.getDate(),
+                tempDate.getHours(),
+                tempDate.getMinutes()
+              ),
+            }
+          : null
+      );
+      setTimeModalVisible(false);
+    }
   };
+
+  if (!formData) return null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -121,7 +145,7 @@ export default function NewEventPage() {
         >
           <FontAwesome5 name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Event</Text>
+        <Text style={styles.headerTitle}>Edit Event</Text>
       </View>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -134,7 +158,7 @@ export default function NewEventPage() {
               style={styles.input}
               value={formData.title}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, title: text }))
+                setFormData((prev) => (prev ? { ...prev, title: text } : null))
               }
               placeholder="Enter event name"
             />
@@ -171,7 +195,9 @@ export default function NewEventPage() {
               style={styles.input}
               value={formData.location}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, location: text }))
+                setFormData((prev) =>
+                  prev ? { ...prev, location: text } : null
+                )
               }
               placeholder="Enter event location"
             />
@@ -201,8 +227,11 @@ export default function NewEventPage() {
       </ScrollView>
 
       <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => setDeleteModalVisible(true)}
+        >
+          <Text style={styles.deleteButtonText}>Delete Event</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -210,11 +239,7 @@ export default function NewEventPage() {
             !isEventValid() && styles.disabledSaveButton,
           ]}
           disabled={!isEventValid()}
-          onPress={() => {
-            if (isEventValid()) {
-              setSaveModalVisible(true);
-            }
-          }}
+          onPress={saveEvent}
         >
           <Text
             style={[
@@ -222,11 +247,46 @@ export default function NewEventPage() {
               !isEventValid() && styles.disabledSaveButtonText,
             ]}
           >
-            Save
+            Save Changes
           </Text>
         </TouchableOpacity>
       </View>
       <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isDeleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Delete Event</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to delete this event? This action cannot be
+              undone.
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={() => {
+                  deleteEvent();
+                  setDeleteModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalConfirmButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         animationType="slide"
@@ -294,75 +354,6 @@ export default function NewEventPage() {
                 onPress={handleTimeConfirm}
               >
                 <Text style={styles.modalConfirmButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Save Confirmation Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isSaveModalVisible}
-        onRequestClose={() => setSaveModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Save Event</Text>
-            <Text style={styles.modalText}>
-              Do you want to save this event?
-            </Text>
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setSaveModalVisible(false)}
-              >
-                <Text style={styles.modalCancelButtonText}>No</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalConfirmButton}
-                onPress={() => {
-                  saveEvent();
-                  setSaveModalVisible(false);
-                  router.push("/events");
-                }}
-              >
-                <Text style={styles.modalConfirmButtonText}>Yes</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Cancel Confirmation Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isCancelModalVisible}
-        onRequestClose={() => setCancelModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Discard Event</Text>
-            <Text style={styles.modalText}>
-              Are you sure you want to cancel? All unsaved changes will be lost.
-            </Text>
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setCancelModalVisible(false)}
-              >
-                <Text style={styles.modalCancelButtonText}>No</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalConfirmButton}
-                onPress={() => {
-                  setCancelModalVisible(false);
-                  router.push("/events");
-                }}
-              >
-                <Text style={styles.modalConfirmButtonText}>Yes</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -449,12 +440,6 @@ const styles = StyleSheet.create({
   addTagText: {
     color: "#FF4444",
     fontWeight: "bold",
-  },
-  bottomButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 20,
-    backgroundColor: "white",
   },
   cancelButton: {
     flex: 1,
@@ -588,6 +573,26 @@ const styles = StyleSheet.create({
   ampmButtonText: {
     color: "#FF4444",
     fontWeight: "bold",
+  },
+  deleteButton: {
+    flex: 1,
+    marginRight: 10,
+    padding: 15,
+    backgroundColor: "#FFF0F0",
+    borderWidth: 1,
+    borderColor: "#FF4444",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#FF4444",
+    fontWeight: "bold",
+  },
+  bottomButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 20,
+    backgroundColor: "white",
   },
   header: {
     flexDirection: "row",

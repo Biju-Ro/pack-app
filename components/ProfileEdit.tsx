@@ -9,7 +9,7 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, router, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 // import * as DocumentPicker from "expo-document-picker";
@@ -19,11 +19,11 @@ import initialUserData from "../data/user.json";
 //import useApplication from "@/hooks/useApplication";
 import { User, Tag } from "@/types";
 import useApplicationContext from "@/hooks/useApplicationContext";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 type UserData = typeof initialUserData;
 
 export default function ProfileEditor() {
-
   const {
     users,
     setUsers,
@@ -36,7 +36,7 @@ export default function ProfileEditor() {
     rotatingChat,
     setRotatingChat,
   } = useApplicationContext();
-  
+
   // State to manage form data
   const [formData, setFormData] = useState<User>({
     ...(users as User[])[0],
@@ -62,7 +62,6 @@ export default function ProfileEditor() {
     })();
 
     console.log("main user in profile edit: ", users);
-
   }, [users, events]);
 
   // Function to save profile image
@@ -120,7 +119,7 @@ export default function ProfileEditor() {
   const addTag = () => {
     setFormData((prev) => ({
       ...prev,
-      tags: [...prev.tags, {tid: prev.tags.length, tagname: ""}],
+      tags: [...prev.tags, { tid: prev.tags.length, tagname: "" }],
     }));
   };
 
@@ -167,14 +166,24 @@ export default function ProfileEditor() {
     console.log("Awaited save profile: ", dummy);
     const dummy2 = await setSaveModalVisible(false);
     console.log("Awaited switch visibility:", dummy2);
-  }
+  };
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push("/profile")}
+        >
+          <FontAwesome5 name="arrow-left" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Edit Your Profile</Text>
+      </View>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.formContainer}>
           {/* Profile Image Section */}
           <View style={styles.imageContainer}>
@@ -359,8 +368,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
   },
+  backButtonText: {
+    color: "#FF4444",
+    fontSize: 16,
+    marginLeft: 10,
+  },
   scrollContent: {
     flexGrow: 1,
+    paddingTop: 0, // Add some top padding
   },
   formContainer: {
     backgroundColor: "white",
@@ -534,5 +549,29 @@ const styles = StyleSheet.create({
   modalConfirmButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  saveButtonDisabled: {
+    backgroundColor: "#CCCCCC",
+  },
+  saveButtonTextDisabled: {
+    color: "#999999",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 80,
+    paddingBottom: 20,
+    backgroundColor: "white",
+  },
+  backButton: {
+    width: 60,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FF4444",
+    justifyContent: "center",
   },
 });

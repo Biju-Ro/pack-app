@@ -7,7 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 const ChatDashboard = () => {
   const notifications = {
@@ -70,21 +70,27 @@ const ChatDashboard = () => {
     <View style={styles.container}>
       <View style={styles.chatButtonsContainer}>
         {/* Floor Chats Button */}
-        <TouchableOpacity style={styles.chatButton}>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => router.push("/floorchat")}
+        >
           <Feather
             name="users"
             size={24}
             color="#333"
             style={styles.buttonIcon}
           />
-          <Text style={styles.buttonText}>Floor Chats</Text>
+          <Text style={styles.buttonText}>Floor Chat</Text>
           <View style={[styles.badgeContainer, styles.wideBadge]}>
             <Text style={styles.badgeText}>New Messages</Text>
           </View>
         </TouchableOpacity>
 
         {/* RA Chat Button */}
-        <TouchableOpacity style={styles.chatButton}>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => router.push("/chatpage")}
+        >
           <Feather
             name="message-circle"
             size={24}
@@ -99,16 +105,17 @@ const ChatDashboard = () => {
 
         {/* Rotating Chat Button */}
 
-        <TouchableOpacity style={styles.chatButton}>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => router.push("/rotatingchat")}
+        >
           <Feather
             name="refresh-cw"
             size={24}
             color="#333"
             style={styles.buttonIcon}
           />
-          <Link href="/rotatingchat" style={styles.buttonText}>
-            Rotating Chat
-          </Link>
+          <Text style={styles.buttonText}>Rotating Chat</Text>
           <View style={[styles.badgeContainer, styles.wideBadge]}>
             <Animated.Text style={[styles.badgeText, { opacity: fadeAnim }]}>
               {renderCountdown()}

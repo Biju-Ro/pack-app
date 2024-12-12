@@ -9,32 +9,52 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 
-// Sample chat data (would normally come from backend/state management)
+// Sample Group Chat Data with More User Details
 const INITIAL_MESSAGES = [
   {
     id: "1",
-    text: "Hey, what's up?",
-    sender: "other",
+    text: "Hey everyone, how's the floor doing?",
+    sender: {
+      id: "1",
+      name: "John Smith",
+      avatar: "https://via.placeholder.com/50",
+      major: "Computer Science",
+      interests: ["Coding", "Gaming", "AI"],
+    },
     timestamp: "2:30 PM",
-    avatar: "https://via.placeholder.com/50",
   },
   {
     id: "2",
-    text: "Not much, just working on a project",
-    sender: "me",
+    text: "Pretty good! Working on our group project",
+    sender: {
+      id: "2",
+      name: "Emma Rodriguez",
+      avatar: "https://via.placeholder.com/50",
+      major: "Data Science",
+      interests: ["Machine Learning", "Photography", "Hiking"],
+    },
     timestamp: "2:31 PM",
-    avatar: "https://via.placeholder.com/50",
   },
 ];
+interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  major: string;
+  interests: string[];
+}
 
-export default function ChatPage() {
-  const router = useRouter(); // Add router for navigation
+export default function FloorChatPage() {
+  const router = useRouter();
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [inputMessage, setInputMessage] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const flatListRef = useRef(null);
 
   const sendMessage = () => {
     if (inputMessage.trim() === "") return;
@@ -42,45 +62,81 @@ export default function ChatPage() {
     const newMessage = {
       id: String(messages.length + 1),
       text: inputMessage,
-      sender: "me",
+      sender: {
+        id: "me",
+        name: "You",
+        avatar: "https://via.placeholder.com/50",
+        major: "Computer Engineering",
+        interests: ["Web Dev", "Music", "Sports"],
+      },
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      avatar: "https://via.placeholder.com/50",
     };
 
     setMessages([...messages, newMessage]);
     setInputMessage("");
-
-    // Simulate a response after a short delay
-    setTimeout(() => {
-      const responseMessage = {
-        id: String(messages.length + 2),
-        text: `You said: ${inputMessage}`,
-        sender: "other",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        avatar: "https://via.placeholder.com/50",
-      };
-      setMessages((prevMessages) => [...prevMessages, responseMessage]);
-    }, 1000);
   };
 
-  // Scroll to bottom when messages change
-  const flatListRef = useRef<FlatList<any>>(null);
-
   useEffect(() => {
-    if (flatListRef.current) {
-      // Safely scroll to the end when messages change
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [messages]);
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, [messages, flatListRef]);
 
-  const renderMessage = ({ item }: any) => {
-    const isMe = item.sender === "me";
+  const UserProfileModal = () => {
+    if (!selectedUser) return null;
+
+    return (
+      <Modal
+        transparent={true}
+        visible={!!selectedUser}
+        onRequestClose={() => setSelectedUser(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Image
+              source={{ uri: selectedUser.avatar }}
+              style={styles.modalAvatar}
+            />
+            <Text style={styles.modalName}>{selectedUser.name}</Text>
+            <Text style={styles.modalMajor}>{selectedUser.major}</Text>
+            <View style={styles.interestsContainer}>
+              {selectedUser.interests.map(
+                (
+                  interest:
+                    | string
+                    | number
+                    | boolean
+                    | React.ReactElement<
+                        any,
+                        string | React.JSXElementConstructor<any>
+                      >
+                    | Iterable<React.ReactNode>
+                    | React.ReactPortal
+                    | null
+                    | undefined,
+                  index: React.Key | null | undefined
+                ) => (
+                  <View key={index} style={styles.interestPill}>
+                    <Text style={styles.interestPillText}>{interest}</Text>
+                  </View>
+                )
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setSelectedUser(null)}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const renderMessage = ({ item }) => {
+    const isMe = item.sender.id === "me";
     return (
       <View
         style={[
@@ -88,14 +144,19 @@ export default function ChatPage() {
           isMe ? styles.myMessageContainer : styles.otherMessageContainer,
         ]}
       >
-        {!isMe && <Image source={{ uri: item.avatar }} style={styles.avatar} />}
+        <Stack.Screen options={{ headerShown: false }} />
+        {!isMe && (
+          <TouchableOpacity onPress={() => setSelectedUser(item.sender)}>
+            <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
+          </TouchableOpacity>
+        )}
         <View
           style={[
             styles.messageBubble,
             isMe ? styles.myMessageBubble : styles.otherMessageBubble,
           ]}
         >
-          <Stack.Screen options={{ headerShown: false }} />
+          {!isMe && <Text style={styles.senderName}>{item.sender.name}</Text>}
           <Text
             style={[
               styles.messageText,
@@ -116,20 +177,11 @@ export default function ChatPage() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/(tabs)")} // Navigate to chats dashboard
+          onPress={() => router.push("/(tabs)")}
         >
           <FontAwesome5 name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/50" }}
-            style={styles.headerAvatar}
-          />
-          <Text style={styles.headerTitle}>RA John</Text>
-        </View>
-        <TouchableOpacity style={styles.callButton}>
-          <FontAwesome5 name="video" size={0} color="#333" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Floor Chats</Text>
       </View>
 
       {/* Messages List */}
@@ -141,6 +193,9 @@ export default function ChatPage() {
         contentContainerStyle={styles.messagesList}
         showsVerticalScrollIndicator={false}
       />
+
+      {/* User Profile Modal */}
+      <UserProfileModal />
 
       {/* Input Area */}
       <KeyboardAvoidingView
@@ -171,12 +226,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
-  // Header Styles
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 60, // Increased from 50 to 60
+    paddingTop: 80,
     paddingBottom: 15,
     paddingHorizontal: 20,
     backgroundColor: "#ffffff",
@@ -187,28 +240,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   backButton: {
-    padding: 10,
-  },
-  headerTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    marginRight: 15,
   },
   headerTitle: {
+    paddingLeft: 115,
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
   },
-  callButton: {
-    padding: 10,
-    color: "#fff",
-  },
-  // Messages List Styles
   messagesList: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -223,6 +262,11 @@ const styles = StyleSheet.create({
   },
   otherMessageContainer: {
     justifyContent: "flex-start",
+  },
+  senderName: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 5,
   },
   avatar: {
     width: 40,
@@ -263,7 +307,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     alignSelf: "flex-end",
   },
-  // Input Container Styles
   inputContainer: {
     position: "absolute",
     bottom: 0,
@@ -290,5 +333,62 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     padding: 10,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: 300,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 15,
+  },
+  modalName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  modalMajor: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 15,
+  },
+  interestsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginBottom: 15,
+  },
+  interestPill: {
+    backgroundColor: "#dc3545",
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    margin: 5,
+  },
+  interestPillText: {
+    color: "white",
+    fontSize: 12,
+  },
+  closeModalButton: {
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  closeModalButtonText: {
+    color: "#333",
+    fontWeight: "bold",
   },
 });

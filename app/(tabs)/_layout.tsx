@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Tabs } from "expo-router";
 import { TabBar } from "@/components/TabBar";
 import ApplicationContext from "@/contexts/ApplicationContext";
-import { FloorChat, RAChat, RotatingChat, User, Event} from "@/types";
-import { EVENTDATA, FLOORCHATDATA, RACHATDATA, ROTATINGCHATDATA, USERDATA } from "@/data/application";
+import { FloorChat, RAChat, RotatingChat, User, Event } from "@/types";
+import {
+  EVENTDATA,
+  FLOORCHATDATA,
+  RACHATDATA,
+  ROTATINGCHATDATA,
+  USERDATA,
+} from "@/data/application";
 
 const TabLayout = () => {
   // const [users, setUsers] = useState<User[]>(USERDATA);
@@ -18,11 +24,20 @@ const TabLayout = () => {
 
   return (
     // <ApplicationContext.Provider value={{ users, setUsers, events, setEvents, raChat, setRAChat, floorChat, setFloorChat, rotatingChat, setRotatingChat}}>
-      <Tabs tabBar={(props) => <TabBar {...props} />}>
-        <Tabs.Screen name="index" options={{ title: "Chats" }} />
-        <Tabs.Screen name="events" options={{ title: "Events" }} />
-        <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-      </Tabs>
+    <Tabs tabBar={(props) => <TabBar {...props} />}>
+      <Tabs.Screen
+        name="index"
+        options={{ title: "Chats", headerShown: false }}
+      />
+      <Tabs.Screen
+        name="events"
+        options={{ title: "Events", headerShown: false }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", headerShown: false }}
+      />
+    </Tabs>
     // </ApplicationContext.Provider>
   );
 };
