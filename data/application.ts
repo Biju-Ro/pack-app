@@ -134,6 +134,15 @@ export var TAGDATA: Tag[] = [
         tid: 30,
         tagname: 'Christmas'
     },
+    {
+        tid: 31,
+        tagname: 'Mario Kart'
+    },
+    {
+        tid: 32,
+        tagname: 'Rock Climbing'
+    },
+
 
     
 ];
@@ -202,6 +211,19 @@ export var USERDATA: User[] = [
         picture: 'https://via.placeholder.com/50',
         tags: [TAGDATA[25], TAGDATA[26], TAGDATA[27], TAGDATA[1]],
     },
+    {
+        uid: 5,
+        nuid: '555555555',
+        firstname: 'Leo',
+        lastname: 'Climb',
+        nickname: 'Leo',
+        major: 'Zoology',
+        minor: 'Biology',
+        gradelevel: 'Senior',
+        picture: 'https://via.placeholder.com/50',
+        tags: [TAGDATA[10], TAGDATA[23], TAGDATA[31]],
+    },
+
 ]
 
 // ALL OF THE EVENTS IN THE SYSTEM (Mutable)
@@ -264,7 +286,7 @@ export var EVENTDATA: Event[] = [
         hostname: USERDATA[2].nickname,
         hostuid: USERDATA[2].uid,
         date: new Date(2024, 11, 12, 23, 30),
-        location: "Ken's Apartment (Msg for details)",
+        location: "Friend's Apartment (Msg for details)",
         tags: [TAGDATA[9], TAGDATA[29]],
         yesVotes: [USERDATA[2].uid, USERDATA[3].uid, USERDATA[4].uid],
         maybeVotes: [],
@@ -282,6 +304,18 @@ export var EVENTDATA: Event[] = [
         maybeVotes: [USERDATA[3].uid],
         noVotes: [],
     },
+    {
+        eid: 5,
+        title: 'Rock Climbing Day!',
+        hostname: USERDATA[2].nickname,
+        hostuid: USERDATA[2].uid,
+        date: new Date(2024, 11, 15, 15, 0),
+        location: "CRG Climbing Gym, Fenway",
+        tags: [TAGDATA[32], TAGDATA[27], TAGDATA[14]],
+        yesVotes: [USERDATA[2].uid, USERDATA[1].uid, USERDATA[4].uid],
+        maybeVotes: [USERDATA[3].uid],
+        noVotes: [],
+    },
 ]
 
 export var MESSAGEDATA: Message[] = [
@@ -291,7 +325,49 @@ export var MESSAGEDATA: Message[] = [
         senderUid: USERDATA[2].uid,
         avatar: USERDATA[2].picture,
         timestamp: new Date(2024, 11, 10, 10, 0),
-    }
+    },
+    {
+        mid: 1,
+        text: "Hey! I saw you signed up for the Christmas Party Event. Just need to know: do you have any food allergies?",
+        senderUid: USERDATA[1].uid,
+        avatar: USERDATA[1].picture,
+        timestamp: new Date(2024, 11, 11, 18, 0),
+    },
+    {
+        mid: 2,
+        text: "Hold up I'm setting it up now",
+        senderUid: USERDATA[2].uid,
+        avatar: USERDATA[2].picture,
+        timestamp: new Date(2024, 11, 10, 12, 15),
+    },
+    {
+        mid: 3,
+        text: "Ken Posted an Event",
+        senderUid: -1,
+        avatar: USERDATA[2].picture,
+        timestamp: new Date(2024, 11, 10, 12, 17),
+    },
+    {
+        mid: 4,
+        text: "Sounds fun! Are we meeting up at the gym or here and walking over?",
+        senderUid: USERDATA[5].uid,
+        avatar: USERDATA[5].picture,
+        timestamp: new Date(2024, 11, 10, 12, 30),
+    },
+    {
+        mid: 5,
+        text: "Oh good point... how about the common room and we walk over together?",
+        senderUid: USERDATA[2].uid,
+        avatar: USERDATA[2].picture,
+        timestamp: new Date(2024, 11, 10, 12, 34),
+    },
+    {
+        mid: 6,
+        text: "Sounds good",
+        senderUid: USERDATA[5].uid,
+        avatar: USERDATA[5].picture,
+        timestamp: new Date(2024, 11, 10, 12, 35),
+    },
 ]
 
 export var RACHATDATA: RAChat = {
@@ -299,8 +375,8 @@ export var RACHATDATA: RAChat = {
 }
 
 export var FLOORCHATDATA: FloorChat = {
-    members: USERDATA,
-    messages: [MESSAGEDATA[0]],
+    members: [0,1,2,3,4,5],
+    messages: [MESSAGEDATA[2], MESSAGEDATA[3], MESSAGEDATA[4], MESSAGEDATA[5], MESSAGEDATA[6]],
 }
 
 export var ROTATINGCHATDATA: RotatingChat = {

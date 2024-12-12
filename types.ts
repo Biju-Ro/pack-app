@@ -82,7 +82,7 @@ export interface RAChat {
 }
 
 export interface FloorChat {
-    members: User[],
+    members: number[],
     messages: Message[],
 }
 
