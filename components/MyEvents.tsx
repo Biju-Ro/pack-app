@@ -16,7 +16,6 @@ export default function MyEventsPage() {
   const { users, events } = useApplicationContext();
   const currentUserUid = users[0].uid;
 
-  // Separate events into upcoming and past events
   const { upcomingEvents, pastEvents } = useMemo(() => {
     const now = new Date();
     const myEvents = events.filter((event) => event.hostuid === currentUserUid);
@@ -54,9 +53,20 @@ export default function MyEventsPage() {
               </Text>
             </View>
             <View style={styles.eventDetailRow}>
+              <Ionicons name="calendar-outline" size={16} color="#666" />
+              <Text style={styles.eventDetailText}>
+                {new Date(event.date).toLocaleDateString([], {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </Text>
+            </View>
+            <View style={styles.eventDetailRow}>
               <Ionicons name="time-outline" size={16} color="#666" />
               <Text style={styles.eventDetailText}>
-                {event.date.toLocaleTimeString([], {
+                {new Date(event.date).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -81,7 +91,6 @@ export default function MyEventsPage() {
       </View>
     </View>
   );
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
