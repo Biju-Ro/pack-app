@@ -13,8 +13,6 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import useApplicationContext from "@/hooks/useApplicationContext";
-import { RACHATDATA, ROTATINGCHATDATA } from "@/data/application";
-import { FloorChat, RAChat, RotatingChat, User, Event, Message } from "@/types";
 import { router, Stack, useNavigation } from "expo-router";
 
 // Sample group chat data
@@ -121,7 +119,7 @@ export default function GroupChatPage() {
     setTimeout(() => {
       const responseMessage = {
         mid: rotatingChat.messages.length + 2,
-        text: `${users[randomSender].nickname} liked that comment!`,
+        text: `${users[randomSender].nickname} liked that message!`,
         senderUid: -1,
         timestamp: new Date(),
         // .toLocaleTimeString([], {

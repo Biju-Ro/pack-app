@@ -18,27 +18,63 @@ import { Stack, useRouter } from "expo-router";
 const INITIAL_MESSAGES = [
   {
     id: "1",
-    text: "Hey everyone, how's the floor doing?",
+    text: "Hold up I'm setting it up now",
     sender: {
       id: "1",
-      name: "John Smith",
+      name: "Ken",
       avatar: "https://via.placeholder.com/50",
       major: "Computer Science",
-      interests: ["Coding", "Gaming", "AI"],
+      interests: ["Volleyball", "Tennis", "Super Smash Bros"],
     },
-    timestamp: "2:30 PM",
+    timestamp: "12:15 PM",
   },
   {
     id: "2",
-    text: "Pretty good! Working on our group project",
+    text: "Ken Posted an Event",
     sender: {
-      id: "2",
+      id: "-1",
       name: "Emma Rodriguez",
       avatar: "https://via.placeholder.com/50",
-      major: "Data Science",
-      interests: ["Machine Learning", "Photography", "Hiking"],
+      major: "Zoology",
+      interests: ["Animals", "Community", "Bowling"],
     },
-    timestamp: "2:31 PM",
+    timestamp: "12:17 PM",
+  },
+  {
+    id: "3",
+    text: "Sounds fun! Are we meeting up at the gym, or here and walking over?",
+    sender: {
+      id: "2",
+      name: "Leo",
+      avatar: "https://via.placeholder.com/50",
+      major: "Zoology",
+      interests: ["Animals", "Community", "Bowling"],
+    },
+    timestamp: "12:30 PM",
+  },
+  {
+    id: "4",
+    text: "Oh good point... how about the common room and we walk over together?",
+    sender: {
+      id: "1",
+      name: "Ken",
+      avatar: "https://via.placeholder.com/50",
+      major: "Computer Science",
+      interests: ["Volleyball", "Tennis", "Super Smash Bros"],
+    },
+    timestamp: "12:15 PM",
+  },
+  {
+    id: "5",
+    text: "Sounds good.",
+    sender: {
+      id: "2",
+      name: "Leo",
+      avatar: "https://via.placeholder.com/50",
+      major: "Zoology",
+      interests: ["Animals", "Community", "Bowling"],
+    },
+    timestamp: "12:30 PM",
   },
 ];
 interface User {
@@ -137,15 +173,20 @@ export default function FloorChatPage() {
 
   const renderMessage = ({ item }) => {
     const isMe = item.sender.id === "me";
+    const isSystem = item.sender.id === "-1"
     return (
       <View
         style={[
           styles.messageContainer,
-          isMe ? styles.myMessageContainer : styles.otherMessageContainer,
+          isMe
+            ? styles.myMessageContainer
+            : isSystem
+            ? styles.systemMessageContainer
+            : styles.otherMessageContainer,
         ]}
       >
         <Stack.Screen options={{ headerShown: false }} />
-        {!isMe && (
+        {!isMe && !isSystem && (
           <TouchableOpacity onPress={() => setSelectedUser(item.sender)}>
             <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
           </TouchableOpacity>
@@ -153,14 +194,22 @@ export default function FloorChatPage() {
         <View
           style={[
             styles.messageBubble,
-            isMe ? styles.myMessageBubble : styles.otherMessageBubble,
+            isMe
+              ? styles.myMessageBubble
+              : isSystem
+              ? styles.systemMessageBubble
+              : styles.otherMessageBubble,
           ]}
         >
-          {!isMe && <Text style={styles.senderName}>{item.sender.name}</Text>}
+          {!isMe && !isSystem && <Text style={styles.senderName}>{item.sender.name}</Text>}
           <Text
             style={[
               styles.messageText,
-              isMe ? styles.myMessageText : styles.otherMessageText,
+              isMe
+                ? styles.myMessageText
+                : isSystem
+                ? styles.systemMessageText
+                : styles.otherMessageText,
             ]}
           >
             {item.text}
@@ -291,6 +340,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+  },
+  systemMessageContainer: {
+    alignItems: "center",
+  },
+  systemMessageBubble: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 15,
+  },
+  systemMessageText: {
+    color: "#666",
+    fontStyle: "italic",
   },
   messageText: {
     fontSize: 16,

@@ -17,18 +17,18 @@ import { Stack, useRouter } from "expo-router";
 const INITIAL_MESSAGES = [
   {
     id: "1",
-    text: "Hey, what's up?",
+    text: "Hey! I saw you signed up for the Christmas Party Event. Just need to know: do you have any food allergies?",
     sender: "other",
     timestamp: "2:30 PM",
     avatar: "https://via.placeholder.com/50",
   },
-  {
-    id: "2",
-    text: "Not much, just working on a project",
-    sender: "me",
-    timestamp: "2:31 PM",
-    avatar: "https://via.placeholder.com/50",
-  },
+  // {
+  //   id: "2",
+  //   text: "Not much, just working on a project",
+  //   sender: "me",
+  //   timestamp: "2:31 PM",
+  //   avatar: "https://via.placeholder.com/50",
+  // },
 ];
 
 export default function ChatPage() {
@@ -57,8 +57,8 @@ export default function ChatPage() {
     setTimeout(() => {
       const responseMessage = {
         id: String(messages.length + 2),
-        text: `You said: ${inputMessage}`,
-        sender: "other",
+        text: `RA Alex liked that message!`,
+        sender: "system",
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -81,25 +81,38 @@ export default function ChatPage() {
 
   const renderMessage = ({ item }: any) => {
     const isMe = item.sender === "me";
+    const isSystem = item.sender === "system";
     return (
       <View
         style={[
           styles.messageContainer,
-          isMe ? styles.myMessageContainer : styles.otherMessageContainer,
+          isMe
+            ? styles.myMessageContainer
+            : isSystem
+            ? styles.systemMessageContainer
+            : styles.otherMessageContainer,
         ]}
       >
-        {!isMe && <Image source={{ uri: item.avatar }} style={styles.avatar} />}
+        {!isMe && !isSystem && <Image source={{ uri: item.avatar }} style={styles.avatar} />}
         <View
           style={[
             styles.messageBubble,
-            isMe ? styles.myMessageBubble : styles.otherMessageBubble,
+            isMe
+              ? styles.myMessageBubble
+              : isSystem
+              ? styles.systemMessageBubble
+              : styles.otherMessageBubble,
           ]}
         >
           <Stack.Screen options={{ headerShown: false }} />
           <Text
             style={[
               styles.messageText,
-              isMe ? styles.myMessageText : styles.otherMessageText,
+              isMe
+                ? styles.myMessageText
+                : isSystem
+                ? styles.systemMessageText
+                : styles.otherMessageText,
             ]}
           >
             {item.text}
@@ -125,7 +138,7 @@ export default function ChatPage() {
             source={{ uri: "https://via.placeholder.com/50" }}
             style={styles.headerAvatar}
           />
-          <Text style={styles.headerTitle}>RA John</Text>
+          <Text style={styles.headerTitle}>RA Alex</Text>
         </View>
         <TouchableOpacity style={styles.callButton}>
           <FontAwesome5 name="video" size={0} color="#333" />
@@ -224,6 +237,17 @@ const styles = StyleSheet.create({
   },
   otherMessageContainer: {
     justifyContent: "flex-start",
+  },
+  systemMessageContainer: {
+    alignItems: "center",
+  },
+  systemMessageBubble: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 15,
+  },
+  systemMessageText: {
+    color: "#666",
+    fontStyle: "italic",
   },
   avatar: {
     width: 40,
