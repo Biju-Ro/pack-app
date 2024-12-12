@@ -243,10 +243,10 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   headerTitle: {
-    paddingLeft: 115,
+    justifyContent: "flex-start",
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "red",
   },
   messagesList: {
     paddingHorizontal: 20,

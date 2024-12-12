@@ -371,10 +371,11 @@ const EventPage = () => {
         >
           <Text style={styles.myEventsTitle}>My Events</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.plusButton}>
-          <Link href={"/newevent"}>
-            <Ionicons name="add" size={24} color="white" />
-          </Link>
+        <TouchableOpacity
+          style={styles.plusButton}
+          onPress={() => router.push("/newevent")}
+        >
+          <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -435,13 +436,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 25,
     alignItems: "flex-end",
-    left: 60,
   },
 
   headerTitle: {
     fontSize: 25,
     fontWeight: "bold",
     color: "#FF4444",
+    paddingRight: 70,
   },
   myEventsTitle: {
     fontSize: 15,
